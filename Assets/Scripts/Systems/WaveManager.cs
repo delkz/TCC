@@ -32,10 +32,13 @@ public class WaveManager : MonoBehaviour
         while (spawnPoint == null)
         {
             spawnPoint = FindObjectOfType<EnemySpawnPoint>();
-            yield return null; // espera próximo frame
+            yield return null; // espera prï¿½ximo frame
         }
 
-        Debug.Log("EnemySpawnPoint encontrado. Iniciando waves.");
+        UILogger.Log("EnemySpawnPoint encontrado. Iniciando waves.");
+        UILogger.Log(
+            $"Wave iniciando em {initialWaveDelay} segundos... Prepare-se!"
+        );
         yield return new WaitForSeconds(initialWaveDelay);
         StartNextWave();
     }
@@ -50,8 +53,8 @@ public class WaveManager : MonoBehaviour
 
         waveInProgress = true;
 
-        Debug.Log(
-            $"Wave {currentWave} iniciada | Inimigos: {enemiesRemaining} | Tempo máximo: {maxWaveDuration}s"
+        UILogger.Log(
+            $"Wave {currentWave} iniciada | Inimigos: {enemiesRemaining} | Tempo mï¿½ximo: {maxWaveDuration}s"
         );
 
         StartCoroutine(SpawnWave(enemiesRemaining));
@@ -65,7 +68,7 @@ public class WaveManager : MonoBehaviour
 
         if (waveTimer <= 0f)
         {
-            Debug.Log($"Wave {currentWave} forçada pelo tempo!");
+            UILogger.Log($"Wave {currentWave} forï¿½ada pelo tempo!");
             ForceEndWave();
         }
     }
@@ -73,7 +76,7 @@ public class WaveManager : MonoBehaviour
     {
         waveInProgress = false;
 
-        // opcional: limpar lista para não bloquear próxima wave
+        // opcional: limpar lista para nï¿½o bloquear prï¿½xima wave
         aliveEnemies.Clear();
 
         StartCoroutine(WaitForNextWave());

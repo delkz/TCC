@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: -4974803009390068529}
   - component: {fileID: -3655225227065811260}
   m_Layer: 7
-  m_Name: tower
+  m_Name: canon_tower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -179,7 +179,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.9706241, g: 1, b: 0, a: 1}
+  m_Color: {r: 1, g: 0, b: 0.6367698, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -282,12 +282,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 340ae8d05492cbf429dbe232ea78dd6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefenseTower
-  attackCooldown: 0.6
-  damage: 1
-  knockback: 0
-  slowAmount: 0.5
+  attackCooldown: 0.2
+  damage: 2
+  knockback: 1
+  slowAmount: 0
   slowDuration: 1.5
-  targetMode: 1
+  targetMode: 0
   projectilePrefab: {fileID: 7952981263758822899, guid: 3a4d591836a298540a55a0e4d352f7c7, type: 3}
   firePoint: {fileID: 8392376936485530851}
 --- !u!114 &-3655225227065811260
@@ -302,7 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36bd33b82a1d7f34c8ffb67dc5582cf9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Buildable
-  buildCost: 25
+  buildCost: 10
   canBeDestroyed: 1
 --- !u!1 &6654298052834654323
 GameObject:

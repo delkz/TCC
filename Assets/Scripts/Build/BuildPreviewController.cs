@@ -21,7 +21,6 @@ public class BuildPreviewController : MonoBehaviour
 
     [Header("Economy")]
     [SerializeField] private GoldManager goldManager;
-    [SerializeField] private int buildCost = 10;
     private GameObject previewInstance;
     private SpriteRenderer previewRenderer;
 
@@ -32,11 +31,24 @@ public class BuildPreviewController : MonoBehaviour
     private static readonly Color BUILD_INVALID_COLOR = new(1f, 0f, 0f, 0.5f);
     private static readonly Color DESTROY_COLOR = new(1f, 0f, 0f, 0.4f);
 
+    private Buildable currentBuildable
+    {
+        get
+        {
+            var buildable = buildingPrefabs[selectedIndex].GetComponent<Buildable>();
+            if (buildable == null)
+            {
+                Debug.LogError($"Prefab {buildingPrefabs[selectedIndex].name} não tem Buildable!");
+            }
+            return buildable;
+        }
+    }
+
     private void Start()
     {
         CreatePreview();
         hudController.UpdateMode(currentMode);
-        hudController.UpdateBuilding(buildingPrefabs[selectedIndex].name);
+        hudController.UpdateBuilding(buildingPrefabs[selectedIndex].name, currentBuildable.BuildCost);
 
     }
 
@@ -121,7 +133,7 @@ public class BuildPreviewController : MonoBehaviour
         canBuild =
             gridManager.IsCellBuildable(currentGridPos.x, currentGridPos.y) &&
             gridManager.CanBlockCell(currentGridPos) &&
-            goldManager.CanAfford(buildCost);
+            goldManager.CanAfford(currentBuildable.BuildCost);
 
         previewRenderer.color = canBuild ? BUILD_VALID_COLOR : BUILD_INVALID_COLOR;
     }
@@ -146,20 +158,21 @@ public class BuildPreviewController : MonoBehaviour
         else if (selectedIndex >= buildingPrefabs.Length)
             selectedIndex = 0;
 
-        hudController.UpdateBuilding(buildingPrefabs[selectedIndex].name);
+
+        hudController.UpdateBuilding(buildingPrefabs[selectedIndex].name, currentBuildable.BuildCost);
     }
 
     // ================= ACTIONS =================
 
     private void TryBuild()
     {
-        if (!goldManager.Spend(buildCost))
-            return;
-
         if (!canBuild)
             return;
 
         if (!gridManager.CanBlockCell(currentGridPos))
+            return;
+
+        if (!goldManager.Spend(currentBuildable.BuildCost))
             return;
 
 

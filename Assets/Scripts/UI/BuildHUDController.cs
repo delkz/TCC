@@ -51,18 +51,21 @@ public class BuildHUDController : MonoBehaviour
         modeText.text = $"Mode: {mode}";
     }
 
-    public void UpdateBuilding(string buildingName)
+    public void UpdateBuilding(string buildingName, int cost = 0)
     {
-        buildingText.text = $"Building: {buildingName}";
+        buildingText.text = $"Building: {buildingName} (Cost: {cost})";
     }
 
     private void UpdateMoney(int money)
     {
+        // UILogger.Log($"Atualizando dinheiro {money}");
         moneyText.text = $"${money}";
     }
 
     private void UpdateNexusHealth(int health)
     {
+        UILogger.Log($"Atualizando a vida do nexus {health}");
+
         if (nexusLifeText != null)
         {
             nexusLifeText.text = $"Nexus HP: {health}";
@@ -71,9 +74,11 @@ public class BuildHUDController : MonoBehaviour
 
     private void HandleNexusDestroyed()
     {
-        Debug.Log("UIManager recebeu evento: Nexus destruído");
-
-        // por enquanto só feedback
+        UILogger.Log("UIManager recebeu evento: Nexus destruï¿½do");
+        // por enquanto sï¿½ feedback
         // depois vira tela de Game Over
     }
+
+
+
 }
