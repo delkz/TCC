@@ -48,13 +48,14 @@ public class WaveManager : MonoBehaviour
 
         enemiesRemaining = startingEnemies + (currentWave - 1) * 2;
 
-        maxWaveDuration = enemiesRemaining * timePerEnemy;
+        // maxWaveDuration = enemiesRemaining * timePerEnemy;
+        maxWaveDuration = Mathf.Floor(30f + (enemiesRemaining * timePerEnemy / 3f)); // ajuste para balancear
         waveTimer = maxWaveDuration;
 
         waveInProgress = true;
 
         UILogger.Log(
-            $"Wave {currentWave} iniciada | Inimigos: {enemiesRemaining} | Tempo m�ximo: {maxWaveDuration}s"
+            $"Wave {currentWave} iniciada | Inimigos: {enemiesRemaining} | Tempo máximo: {maxWaveDuration}s"
         );
 
         StartCoroutine(SpawnWave(enemiesRemaining));

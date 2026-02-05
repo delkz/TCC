@@ -18,8 +18,6 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject nexusPrefab;
     [SerializeField] private GameObject enemySpawnPrefab;
 
-    [Header("Enemies")]
-    [SerializeField] private Enemy enemyPrefab;
     // ===================== DATA =====================
 
     [System.Serializable]
@@ -27,16 +25,17 @@ public class GridManager : MonoBehaviour
     {
         public int x;
         public int y;
-        public bool isOccupied;
+        public bool IsOccupied => occupant != null;
         public bool isBuildable;
-
+        public GameObject occupant;
         public Cell(int x, int y)
         {
             this.x = x;
             this.y = y;
-            isOccupied = false;
             isBuildable = true;
+            occupant = null;
         }
+
     }
 
     private Cell[,] grid;
@@ -122,15 +121,24 @@ public class GridManager : MonoBehaviour
         if (!IsValidCell(x, y))
             return false;
 
-        return !grid[x, y].isOccupied && grid[x, y].isBuildable;
+        return !grid[x, y].IsOccupied && grid[x, y].isBuildable;
     }
 
-    public void SetCellOccupied(int x, int y, bool occupied)
+    public void SetCellOccupant(int x, int y, GameObject occupant)
     {
         if (!IsValidCell(x, y))
             return;
-        grid[x, y].isOccupied = occupied;
+
+        grid[x, y].occupant = occupant;
         OnGridChanged?.Invoke();
+    }
+
+    public GameObject GetCellOccupant(int x, int y)
+    {
+        if (!IsValidCell(x, y))
+            return null;
+
+        return grid[x, y].occupant;
     }
 
     public Vector2Int WorldToGridPosition(Vector3 worldPosition)
@@ -155,14 +163,14 @@ public class GridManager : MonoBehaviour
         if (!IsValidCell(cellToBlock.x, cellToBlock.y))
             return false;
 
-        if (grid[cellToBlock.x, cellToBlock.y].isOccupied)
+        if (grid[cellToBlock.x, cellToBlock.y].IsOccupied)
             return false;
 
-        // salva estado atual
-        bool previousState = grid[cellToBlock.x, cellToBlock.y].isOccupied;
+        // salva ocupante atual
+        GameObject previousOccupant = grid[cellToBlock.x, cellToBlock.y].occupant;
 
         // simula bloqueio
-        grid[cellToBlock.x, cellToBlock.y].isOccupied = true;
+        grid[cellToBlock.x, cellToBlock.y].occupant = gameObject; // dummy blocker
 
         Vector2Int start = GetEnemySpawnCell();
         Vector2Int end = GetGridCenterCell();
@@ -170,9 +178,8 @@ public class GridManager : MonoBehaviour
         var path = FindPath(start, end);
 
         // desfaz simulação
-        grid[cellToBlock.x, cellToBlock.y].isOccupied = previousState;
+        grid[cellToBlock.x, cellToBlock.y].occupant = previousOccupant;
 
-        // caminho válido existe?
         return path != null && path.Count > 0;
     }
 
@@ -189,18 +196,19 @@ public class GridManager : MonoBehaviour
 
         Vector2Int cell = GetGridCenterCell();
 
-        Instantiate(
+
+        GameObject nexus = Instantiate(
             nexusPrefab,
             GridToWorldCenter(cell),
             Quaternion.identity
         );
 
-        SetCellOccupied(cell.x, cell.y, true);
+        SetCellOccupant(cell.x, cell.y, nexus);
     }
 
     private void SpawnEnemySpawnPoint()
     {
-        if (enemySpawnPrefab == null || enemyPrefab == null)
+        if (enemySpawnPrefab == null)
         {
             Debug.LogWarning("EnemySpawn ou Enemy prefab não atribuído.");
             return;
@@ -224,12 +232,11 @@ public class GridManager : MonoBehaviour
         }
 
         spawnPoint.Initialize(
-            enemyPrefab,
             nexus,
             this // 🔹 GridManager da cena
         );
 
-        SetCellOccupied(cell.x, cell.y, true);
+        SetCellOccupant(cell.x, cell.y, spawnGO);
     }
 
 
@@ -263,7 +270,7 @@ public class GridManager : MonoBehaviour
                 nodes[x, y] = new PathNode(
                     x,
                     y,
-                    !grid[x, y].isOccupied
+                    !grid[x, y].IsOccupied
                 );
             }
         }

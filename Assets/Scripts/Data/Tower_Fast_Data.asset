@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cf305f5fa78197540a3f8475d420077b, type: 3}
-  m_Name: Tower_Basic_Data
+  m_Name: Tower_Fast_Data
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Tower
+  buildingName: Tower Fast
   prefab: {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
   icon: {fileID: 0}
-  buildCost: 25
+  buildCost: 15
   refundPercent: 0.66
   canBeDestroyed: 1
-  damage: 45
-  attackCooldown: 1.25
+  damage: 15
+  attackCooldown: 0.5
   range: 12
-  slowAmount: 1
-  slowDuration: 4
+  slowAmount: 0.25
+  slowDuration: 1
   knockback: 0

@@ -170,43 +170,40 @@ public class BuildPreviewController : MonoBehaviour
         if (!goldManager.Spend(CurrentBuildingData.buildCost))
             return;
 
-        Instantiate(
+        GameObject building = Instantiate(
             CurrentBuildingData.prefab,
             GetCellCenter(currentGridPos),
             Quaternion.identity
         );
 
-        gridManager.SetCellOccupied(currentGridPos.x, currentGridPos.y, true);
+        gridManager.SetCellOccupant(
+            currentGridPos.x,
+            currentGridPos.y,
+            building
+        );
     }
 
     private void TryDestroy()
     {
-        Vector3 position = GetCellCenter(currentGridPos);
-
-        Collider2D hit = Physics2D.OverlapPoint(
-            position,
-            LayerMask.GetMask("Buildings")
+        GameObject occupant = gridManager.GetCellOccupant(
+            currentGridPos.x,
+            currentGridPos.y
         );
 
-        if (hit == null)
+        if (occupant == null)
             return;
 
-        Buildable buildable = hit.GetComponent<Buildable>();
+        Buildable buildable = occupant.GetComponent<Buildable>();
         if (buildable == null)
             return;
 
         if (!buildable.CanBeDestroyed)
             return;
 
-        if (goldManager != null)
-        {
-            goldManager.Add(buildable.GetRefundValue());
-        }
+        goldManager.Add(buildable.GetRefundValue());
 
-        Destroy(hit.gameObject);
-        if (gridManager != null)
-        {
-            gridManager.SetCellOccupied(currentGridPos.x, currentGridPos.y, false);
-        }
+        Destroy(occupant);
+        gridManager.SetCellOccupant(currentGridPos.x, currentGridPos.y, null);
     }
+
 }

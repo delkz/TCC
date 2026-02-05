@@ -212,6 +212,7 @@ MonoBehaviour:
   previewPrefab: {fileID: 3950415348843120721, guid: f3646e07b77f992488aa9e9cd87d390d, type: 3}
   buildings:
   - {fileID: 11400000, guid: aecabc7692361c8479bdff6d174e2744, type: 2}
+  - {fileID: 11400000, guid: 7aba8192581bd1644be0e4e381e44d9c, type: 2}
   - {fileID: 11400000, guid: e49ab7684e48f5c46a6b45fac394ce02, type: 2}
   selectedIndex: 0
   currentMode: 0
@@ -716,7 +717,6 @@ MonoBehaviour:
   worldSprite: {fileID: 866948209}
   nexusPrefab: {fileID: 3950415348843120721, guid: 41c3c9f105f71ec4bae908feb4dafc90, type: 3}
   enemySpawnPrefab: {fileID: 3950415348843120721, guid: 925ab2f7ec9839e46917da373589263e, type: 3}
-  enemyPrefab: {fileID: 5577990929828159810, guid: 10bf035cf10b7e0468cbfff8767e0895, type: 3}
 --- !u!4 &577640071
 Transform:
   m_ObjectHideFlags: 0
@@ -1634,7 +1634,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c212b6572e6599744bc48f9622acd3ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoldManager
-  startingGold: 30
+  startingGold: 60
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
