@@ -2,9 +2,13 @@ using UnityEngine;
 
 public class Buildable : MonoBehaviour
 {
-    [SerializeField] private int buildCost = 10;
-    [SerializeField] private bool canBeDestroyed = true;
+    [SerializeField] private BuildingData data;
 
-    public int BuildCost => buildCost;
-    public bool CanBeDestroyed => canBeDestroyed;
+    public BuildingData Data => data;
+    public bool CanBeDestroyed => data.canBeDestroyed;
+
+    public int GetRefundValue()
+    {
+        return Mathf.FloorToInt(data.buildCost * data.refundPercent);
+    }
 }

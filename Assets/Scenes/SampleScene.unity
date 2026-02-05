@@ -210,15 +210,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildPreviewController
   gridManager: {fileID: 577640070}
   previewPrefab: {fileID: 3950415348843120721, guid: f3646e07b77f992488aa9e9cd87d390d, type: 3}
-  buildingPrefabs:
-  - {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
-  - {fileID: 3950415348843120721, guid: 98f2f9b802452db41b4fbab3b0c9281d, type: 3}
-  - {fileID: 3950415348843120721, guid: fd53cee631d58e5458af8392a5ecf58d, type: 3}
+  buildings:
+  - {fileID: 11400000, guid: aecabc7692361c8479bdff6d174e2744, type: 2}
+  - {fileID: 11400000, guid: e49ab7684e48f5c46a6b45fac394ce02, type: 2}
   selectedIndex: 0
   currentMode: 0
   hudController: {fileID: 356801503}
   goldManager: {fileID: 1866200237}
-  buildCost: 20
 --- !u!1 &279502417
 GameObject:
   m_ObjectHideFlags: 0

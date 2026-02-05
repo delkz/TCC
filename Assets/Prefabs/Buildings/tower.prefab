@@ -302,8 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36bd33b82a1d7f34c8ffb67dc5582cf9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Buildable
-  buildCost: 25
-  canBeDestroyed: 1
+  data: {fileID: 11400000, guid: aecabc7692361c8479bdff6d174e2744, type: 2}
 --- !u!1 &6654298052834654323
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,24 +3,21 @@ using System.Collections.Generic;
 
 public class DefenseTower : MonoBehaviour
 {
-    [Header("Attack")]
-    [SerializeField] private float attackCooldown = 0.5f;
-    [SerializeField] private int damage = 1;
-
-    [Header("Effects")]
-    [SerializeField] private float knockback = 0f;
-    [SerializeField] private float slowAmount = 0f;
-    [SerializeField] private float slowDuration = 0f;
-
-    [Header("Targeting")]
-    [SerializeField] private TowerTargetMode targetMode = TowerTargetMode.LowestHealth;
+    private Buildable buildable;
+    private BuildingData data;
 
     [Header("Projectile")]
     [SerializeField] private Projectile projectilePrefab;
     [SerializeField] private Transform firePoint;
 
     private float cooldownTimer;
-    private List<Enemy> enemiesInRange = new();
+    private readonly List<Enemy> enemiesInRange = new();
+
+    private void Awake()
+    {
+        buildable = GetComponent<Buildable>();
+        data = buildable.Data;
+    }
 
     private void Update()
     {
@@ -32,7 +29,7 @@ public class DefenseTower : MonoBehaviour
             if (target != null)
             {
                 Shoot(target);
-                cooldownTimer = attackCooldown;
+                cooldownTimer = data.attackCooldown;
             }
         }
     }
@@ -47,10 +44,10 @@ public class DefenseTower : MonoBehaviour
 
         projectile.Initialize(
             target,
-            damage,
-            knockback,
-            slowAmount,
-            slowDuration
+            data.damage,
+            data.knockback,
+            data.slowAmount,
+            data.slowDuration
         );
     }
 
@@ -61,64 +58,23 @@ public class DefenseTower : MonoBehaviour
         if (enemiesInRange.Count == 0)
             return null;
 
-        return targetMode switch
+        Enemy closest = null;
+        float minDistance = float.MaxValue;
+
+        foreach (Enemy enemy in enemiesInRange)
         {
-            TowerTargetMode.Closest => GetClosestEnemy(),
-            TowerTargetMode.LowestHealth => GetLowestHealthEnemy(),
-            _ => null
-        };
-    }
-
-    private Enemy GetLowestHealthEnemy()
-    {
-        Enemy target = null;
-        int lowestHealth = int.MaxValue;
-
-        for (int i = enemiesInRange.Count - 1; i >= 0; i--)
-        {
-            Enemy enemy = enemiesInRange[i];
-
             if (enemy == null)
-            {
-                enemiesInRange.RemoveAt(i);
                 continue;
-            }
 
-            if (enemy.CurrentHealth < lowestHealth)
+            float dist = Vector3.Distance(transform.position, enemy.transform.position);
+            if (dist < minDistance)
             {
-                lowestHealth = enemy.CurrentHealth;
-                target = enemy;
+                minDistance = dist;
+                closest = enemy;
             }
         }
 
-        return target;
-    }
-
-    private Enemy GetClosestEnemy()
-    {
-        Enemy target = null;
-        float closestDistance = float.MaxValue;
-
-        for (int i = enemiesInRange.Count - 1; i >= 0; i--)
-        {
-            Enemy enemy = enemiesInRange[i];
-
-            if (enemy == null)
-            {
-                enemiesInRange.RemoveAt(i);
-                continue;
-            }
-
-            float distance = Vector3.Distance(transform.position, enemy.transform.position);
-
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                target = enemy;
-            }
-        }
-
-        return target;
+        return closest;
     }
 
     // ================= RANGE =================

@@ -10,7 +10,7 @@ public class BuildPreviewController : MonoBehaviour
     [SerializeField] private GameObject previewPrefab;
 
     [Header("Buildings")]
-    [SerializeField] private GameObject[] buildingPrefabs;
+    [SerializeField] private BuildingData[] buildings;
     [SerializeField] private int selectedIndex = 0;
 
     [Header("Mode")]
@@ -21,6 +21,7 @@ public class BuildPreviewController : MonoBehaviour
 
     [Header("Economy")]
     [SerializeField] private GoldManager goldManager;
+
     private GameObject previewInstance;
     private SpriteRenderer previewRenderer;
 
@@ -31,25 +32,18 @@ public class BuildPreviewController : MonoBehaviour
     private static readonly Color BUILD_INVALID_COLOR = new(1f, 0f, 0f, 0.5f);
     private static readonly Color DESTROY_COLOR = new(1f, 0f, 0f, 0.4f);
 
-    private Buildable currentBuildable
-    {
-        get
-        {
-            var buildable = buildingPrefabs[selectedIndex].GetComponent<Buildable>();
-            if (buildable == null)
-            {
-                Debug.LogError($"Prefab {buildingPrefabs[selectedIndex].name} não tem Buildable!");
-            }
-            return buildable;
-        }
-    }
+    // 🔹 Fonte única de verdade para o prédio selecionado
+    private BuildingData CurrentBuildingData => buildings[selectedIndex];
 
     private void Start()
     {
         CreatePreview();
-        hudController.UpdateMode(currentMode);
-        hudController.UpdateBuilding(buildingPrefabs[selectedIndex].name, currentBuildable.BuildCost);
 
+        hudController.UpdateMode(currentMode);
+        hudController.UpdateBuilding(
+            CurrentBuildingData.buildingName,
+            CurrentBuildingData.buildCost
+        );
     }
 
     private void Update()
@@ -76,7 +70,6 @@ public class BuildPreviewController : MonoBehaviour
             : BuildMode.Build;
 
         hudController.UpdateMode(currentMode);
-        Debug.Log($"Modo atual: {currentMode}");
     }
 
     private void HandleBuildingSelection()
@@ -133,7 +126,7 @@ public class BuildPreviewController : MonoBehaviour
         canBuild =
             gridManager.IsCellBuildable(currentGridPos.x, currentGridPos.y) &&
             gridManager.CanBlockCell(currentGridPos) &&
-            goldManager.CanAfford(currentBuildable.BuildCost);
+            goldManager.CanAfford(CurrentBuildingData.buildCost);
 
         previewRenderer.color = canBuild ? BUILD_VALID_COLOR : BUILD_INVALID_COLOR;
     }
@@ -154,12 +147,14 @@ public class BuildPreviewController : MonoBehaviour
         selectedIndex += direction;
 
         if (selectedIndex < 0)
-            selectedIndex = buildingPrefabs.Length - 1;
-        else if (selectedIndex >= buildingPrefabs.Length)
+            selectedIndex = buildings.Length - 1;
+        else if (selectedIndex >= buildings.Length)
             selectedIndex = 0;
 
-
-        hudController.UpdateBuilding(buildingPrefabs[selectedIndex].name, currentBuildable.BuildCost);
+        hudController.UpdateBuilding(
+            CurrentBuildingData.buildingName,
+            CurrentBuildingData.buildCost
+        );
     }
 
     // ================= ACTIONS =================
@@ -172,12 +167,11 @@ public class BuildPreviewController : MonoBehaviour
         if (!gridManager.CanBlockCell(currentGridPos))
             return;
 
-        if (!goldManager.Spend(currentBuildable.BuildCost))
+        if (!goldManager.Spend(CurrentBuildingData.buildCost))
             return;
 
-
-        GameObject building = Instantiate(
-            buildingPrefabs[selectedIndex],
+        Instantiate(
+            CurrentBuildingData.prefab,
             GetCellCenter(currentGridPos),
             Quaternion.identity
         );
@@ -204,16 +198,15 @@ public class BuildPreviewController : MonoBehaviour
         if (!buildable.CanBeDestroyed)
             return;
 
-        int refund = Mathf.FloorToInt(buildable.BuildCost * 2f / 3f);
-
         if (goldManager != null)
         {
-            goldManager.Add(refund);
+            goldManager.Add(buildable.GetRefundValue());
         }
 
         Destroy(hit.gameObject);
-        gridManager.SetCellOccupied(currentGridPos.x, currentGridPos.y, false);
+        if (gridManager != null)
+        {
+            gridManager.SetCellOccupied(currentGridPos.x, currentGridPos.y, false);
+        }
     }
-
-
 }

@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cba9a649bf86df64c9cd1aef0559e8fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Nexus
-  health: 10
+  maxHealth: 10
 --- !u!114 &-25783170228241129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,5 +165,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36bd33b82a1d7f34c8ffb67dc5582cf9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Buildable
-  buildCost: 0
-  canBeDestroyed: 0
+  data: {fileID: 11400000, guid: 57572a9819b7fc04da8d81fc50a91b37, type: 2}
