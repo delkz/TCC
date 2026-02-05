@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8542880123509563005}
   - component: {fileID: 1743563287670682801}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: Range
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -125,6 +125,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8542880123509563005}
+  - {fileID: 8392376936485530851}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7533303412708995018
@@ -280,5 +281,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 340ae8d05492cbf429dbe232ea78dd6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefenseTower
-  attackCooldown: 1
+  attackCooldown: 0.6
   damage: 1
+  knockback: 0
+  slowAmount: 0.5
+  slowDuration: 1.5
+  targetMode: 1
+  projectilePrefab: {fileID: 7952981263758822899, guid: 3a4d591836a298540a55a0e4d352f7c7, type: 3}
+  firePoint: {fileID: 8392376936485530851}
+--- !u!1 &6654298052834654323
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8392376936485530851}
+  m_Layer: 0
+  m_Name: firePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8392376936485530851
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6654298052834654323}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1600908817014779697}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -19,6 +19,9 @@ public class BuildPreviewController : MonoBehaviour
     [Header("UI")]
     [SerializeField] private BuildHUDController hudController;
 
+    [Header("Economy")]
+    [SerializeField] private GoldManager goldManager;
+    [SerializeField] private int buildCost = 10;
     private GameObject previewInstance;
     private SpriteRenderer previewRenderer;
 
@@ -117,7 +120,8 @@ public class BuildPreviewController : MonoBehaviour
 
         canBuild =
             gridManager.IsCellBuildable(currentGridPos.x, currentGridPos.y) &&
-            gridManager.CanBlockCell(currentGridPos);
+            gridManager.CanBlockCell(currentGridPos) &&
+            goldManager.CanAfford(buildCost);
 
         previewRenderer.color = canBuild ? BUILD_VALID_COLOR : BUILD_INVALID_COLOR;
     }
@@ -149,6 +153,9 @@ public class BuildPreviewController : MonoBehaviour
 
     private void TryBuild()
     {
+        if (!goldManager.Spend(buildCost))
+            return;
+
         if (!canBuild)
             return;
 

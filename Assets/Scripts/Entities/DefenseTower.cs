@@ -7,12 +7,20 @@ public class DefenseTower : MonoBehaviour
     [SerializeField] private float attackCooldown = 0.5f;
     [SerializeField] private int damage = 1;
 
+    [Header("Effects")]
+    [SerializeField] private float knockback = 0f;
+    [SerializeField] private float slowAmount = 0f;
+    [SerializeField] private float slowDuration = 0f;
+
     [Header("Targeting")]
     [SerializeField] private TowerTargetMode targetMode = TowerTargetMode.LowestHealth;
 
+    [Header("Projectile")]
+    [SerializeField] private Projectile projectilePrefab;
+    [SerializeField] private Transform firePoint;
+
     private float cooldownTimer;
     private List<Enemy> enemiesInRange = new();
-    //tower.SetTargetMode(TowerTargetMode.Closest);
 
     private void Update()
     {
@@ -23,10 +31,27 @@ public class DefenseTower : MonoBehaviour
             Enemy target = SelectTarget();
             if (target != null)
             {
-                target.TakeDamage(damage);
+                Shoot(target);
                 cooldownTimer = attackCooldown;
             }
         }
+    }
+
+    private void Shoot(Enemy target)
+    {
+        Projectile projectile = Instantiate(
+            projectilePrefab,
+            firePoint.position,
+            Quaternion.identity
+        );
+
+        projectile.Initialize(
+            target,
+            damage,
+            knockback,
+            slowAmount,
+            slowDuration
+        );
     }
 
     // ================= TARGET SELECTION =================
@@ -36,20 +61,12 @@ public class DefenseTower : MonoBehaviour
         if (enemiesInRange.Count == 0)
             return null;
 
-        Enemy selected = null;
-
-        switch (targetMode)
+        return targetMode switch
         {
-            case TowerTargetMode.Closest:
-                selected = GetClosestEnemy();
-                break;
-
-            case TowerTargetMode.LowestHealth:
-                selected = GetLowestHealthEnemy();
-                break;
-        }
-
-        return selected;
+            TowerTargetMode.Closest => GetClosestEnemy(),
+            TowerTargetMode.LowestHealth => GetLowestHealthEnemy(),
+            _ => null
+        };
     }
 
     private Enemy GetLowestHealthEnemy()
@@ -104,23 +121,19 @@ public class DefenseTower : MonoBehaviour
         return target;
     }
 
-    // ================= RANGE DETECTION =================
+    // ================= RANGE =================
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         Enemy enemy = other.GetComponent<Enemy>();
         if (enemy != null && !enemiesInRange.Contains(enemy))
-        {
             enemiesInRange.Add(enemy);
-        }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         Enemy enemy = other.GetComponent<Enemy>();
         if (enemy != null)
-        {
             enemiesInRange.Remove(enemy);
-        }
     }
 }

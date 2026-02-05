@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private float speed = 2f;
@@ -16,6 +16,9 @@ public class Enemy : MonoBehaviour
     private GridManager gridManager;
     private Vector2Int targetCell;
 
+    private float slowMultiplier = 1f;
+    private float slowTimer;
+    public event Action<Enemy> OnEnemyDied;
     public void SetTarget(Transform nexus)
     {
         target = nexus;
@@ -26,16 +29,30 @@ public class Enemy : MonoBehaviour
         if (path == null || pathIndex >= path.Count)
             return;
 
+        float finalSpeed = speed * slowMultiplier;
+
         transform.position = Vector3.MoveTowards(
             transform.position,
             path[pathIndex],
-            speed * Time.deltaTime
+            finalSpeed * Time.deltaTime
         );
 
         if (Vector3.Distance(transform.position, path[pathIndex]) < 0.05f)
         {
             pathIndex++;
         }
+
+
+        if (slowTimer > 0f)
+        {
+            slowTimer -= Time.deltaTime;
+
+            if (slowTimer <= 0f)
+            {
+                slowMultiplier = 1f;
+            }
+        }
+
     }
 
 
@@ -46,9 +63,16 @@ public class Enemy : MonoBehaviour
         Debug.Log("I took damage, my life is now " + health);
         if (health <= 0)
         {
-            Destroy(gameObject);
+            Die();
         }
     }
+
+    private void Die()
+    {
+        OnEnemyDied?.Invoke(this);
+        Destroy(gameObject);
+    }
+
     public void Initialize(GridManager gridManager, Vector2Int targetCell)
     {
         this.gridManager = gridManager;
@@ -83,6 +107,26 @@ public class Enemy : MonoBehaviour
             return;
 
         nexus.TakeDamage(damageToNexus);
-        Destroy(gameObject);
+        Die();
     }
+
+    // ESTADOS
+
+    public void ApplySlow(float amount, float duration)
+    {
+        float newMultiplier = Mathf.Clamp(1f - amount, 0.2f, 1f);
+
+        // mantém o slow mais forte
+        slowMultiplier = Mathf.Min(slowMultiplier, newMultiplier);
+
+        // renova duração se for maior
+        slowTimer = Mathf.Max(slowTimer, duration);
+    }
+
+    public void ApplyKnockback(Vector3 source, float force)
+    {
+        Vector3 dir = (transform.position - source).normalized;
+        transform.position += dir * force;
+    }
+
 }
