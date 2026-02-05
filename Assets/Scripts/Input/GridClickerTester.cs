@@ -15,7 +15,7 @@ public class GridClickerTester : MonoBehaviour
 
             Vector2Int gridPosition = gridManager.WorldToGridPosition(worldPosition);
 
-            if (gridManager.isValidCell(gridPosition.x, gridPosition.y))
+            if (gridManager.IsValidCell(gridPosition.x, gridPosition.y))
             {
                 Debug.Log($"Célula clicada: X={gridPosition.x}, Y={gridPosition.y}");
             }

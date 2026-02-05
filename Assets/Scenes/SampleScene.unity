@@ -211,12 +211,59 @@ MonoBehaviour:
   gridManager: {fileID: 577640070}
   previewPrefab: {fileID: 3950415348843120721, guid: f3646e07b77f992488aa9e9cd87d390d, type: 3}
   buildingPrefabs:
+  - {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+  - {fileID: 3950415348843120721, guid: e93d20d200c59a546b50944f3ac78028, type: 3}
   - {fileID: 3950415348843120721, guid: fd53cee631d58e5458af8392a5ecf58d, type: 3}
   - {fileID: 3950415348843120721, guid: cd0c10beda37b184bade94b663f6c617, type: 3}
-  - {fileID: 3950415348843120721, guid: e93d20d200c59a546b50944f3ac78028, type: 3}
   selectedIndex: 0
   currentMode: 0
-  hudController: {fileID: 0}
+  hudController: {fileID: 356801503}
+--- !u!1 &356801501
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 356801502}
+  - component: {fileID: 356801503}
+  m_Layer: 0
+  m_Name: UIController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &356801502
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 356801501}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1217496568}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &356801503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 356801501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a271fe5b1fb840749b7fd33e52babd02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildHUDController
+  modeText: {fileID: 676192579}
+  buildingText: {fileID: 677577227}
 --- !u!1 &454460585
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,8 +639,11 @@ MonoBehaviour:
   width: 10
   height: 10
   cellSize: 1
-  mainCamera: {fileID: 519420028}
+  mainCamera: {fileID: 519420031}
   worldSprite: {fileID: 866948209}
+  nexusPrefab: {fileID: 3950415348843120721, guid: 41c3c9f105f71ec4bae908feb4dafc90, type: 3}
+  enemySpawnPrefab: {fileID: 3950415348843120721, guid: 925ab2f7ec9839e46917da373589263e, type: 3}
+  enemyPrefab: {fileID: 5577990929828159810, guid: 10bf035cf10b7e0468cbfff8767e0895, type: 3}
 --- !u!4 &577640071
 Transform:
   m_ObjectHideFlags: 0
@@ -945,8 +995,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -2075641533
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
@@ -1007,6 +1057,7 @@ Transform:
   - {fileID: 46443812}
   - {fileID: 78154960}
   - {fileID: 1780787655}
+  - {fileID: 356801502}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1780787654
@@ -1088,6 +1139,67 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
+--- !u!1001 &1906514097
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -3807049738235472562, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_Radius
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.3750577
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.3274527
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1600908817014779697, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
+      propertyPath: m_Name
+      value: tower
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1096,3 +1208,4 @@ SceneRoots:
   - {fileID: 866948211}
   - {fileID: 1217496568}
   - {fileID: 454460589}
+  - {fileID: 1906514097}

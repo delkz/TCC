@@ -97,7 +97,7 @@ public class BuildPreviewController : MonoBehaviour
 
         currentGridPos = gridManager.WorldToGridPosition(worldPosition);
 
-        if (!gridManager.isValidCell(currentGridPos.x, currentGridPos.y))
+        if (!gridManager.IsValidCell(currentGridPos.x, currentGridPos.y))
         {
             previewRenderer.color = DESTROY_COLOR;
             canBuild = false;
@@ -115,7 +115,10 @@ public class BuildPreviewController : MonoBehaviour
 
         previewRenderer.enabled = true;
 
-        canBuild = gridManager.IsCellBuildable(currentGridPos.x, currentGridPos.y);
+        canBuild =
+            gridManager.IsCellBuildable(currentGridPos.x, currentGridPos.y) &&
+            gridManager.CanBlockCell(currentGridPos);
+
         previewRenderer.color = canBuild ? BUILD_VALID_COLOR : BUILD_INVALID_COLOR;
     }
 
@@ -148,6 +151,10 @@ public class BuildPreviewController : MonoBehaviour
     {
         if (!canBuild)
             return;
+
+        if (!gridManager.CanBlockCell(currentGridPos))
+            return;
+
 
         Instantiate(
             buildingPrefabs[selectedIndex],
