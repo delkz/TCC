@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7533303412708995018}
   - component: {fileID: -241019041381532068}
   - component: {fileID: 3505109956960977801}
+  - component: {fileID: -25783170228241129}
   m_Layer: 0
   m_Name: nexus
   m_TagString: Untagged
@@ -123,7 +124,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -152,3 +153,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Nexus
   health: 10
+--- !u!114 &-25783170228241129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3950415348843120721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36bd33b82a1d7f34c8ffb67dc5582cf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Buildable
+  buildCost: 0
+  canBeDestroyed: 0

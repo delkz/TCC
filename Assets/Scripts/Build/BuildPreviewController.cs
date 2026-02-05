@@ -163,7 +163,7 @@ public class BuildPreviewController : MonoBehaviour
             return;
 
 
-        Instantiate(
+        GameObject building = Instantiate(
             buildingPrefabs[selectedIndex],
             GetCellCenter(currentGridPos),
             Quaternion.identity
@@ -178,14 +178,29 @@ public class BuildPreviewController : MonoBehaviour
 
         Collider2D hit = Physics2D.OverlapPoint(
             position,
-            LayerMask.GetMask("Default")
+            LayerMask.GetMask("Buildings")
         );
 
         if (hit == null)
             return;
 
+        Buildable buildable = hit.GetComponent<Buildable>();
+        if (buildable == null)
+            return;
+
+        if (!buildable.CanBeDestroyed)
+            return;
+
+        int refund = Mathf.FloorToInt(buildable.BuildCost * 2f / 3f);
+
+        if (goldManager != null)
+        {
+            goldManager.Add(refund);
+        }
+
         Destroy(hit.gameObject);
         gridManager.SetCellOccupied(currentGridPos.x, currentGridPos.y, false);
     }
+
 
 }

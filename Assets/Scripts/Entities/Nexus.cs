@@ -1,17 +1,41 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System;
 
 public class Nexus : MonoBehaviour
 {
-    [SerializeField] private int health = 10;
+    [SerializeField] private int maxHealth = 10;
+
+    public int currentHealth { get; private set; }
+
+    public event Action<int> OnHealthChanged;
+    public event Action OnNexusDestroyed;
+
+
+    private void Awake()
+    {
+        currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth);
+    }
 
     public void TakeDamage(int damage)
     {
-        health -= damage;
-        Debug.Log($"Nexus recebeu dano! Vida: {health}");
+        currentHealth -= damage;
+        OnHealthChanged?.Invoke(currentHealth);
+        Debug.Log($"Nexus recebeu dano! Vida: {currentHealth}");
 
-        if (health <= 0)
+        if (currentHealth <= 0)
         {
-            Debug.Log("Nexus destruído! Game Over");
+            Explode();
         }
+    }
+
+    private void Explode()
+    {
+        Debug.Log("Nexus destruído! Reiniciando cena...");
+        OnNexusDestroyed?.Invoke();
+
+        // Reinicia a cena atual
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

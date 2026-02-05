@@ -219,7 +219,7 @@ MonoBehaviour:
   currentMode: 0
   hudController: {fileID: 356801503}
   goldManager: {fileID: 1866200237}
-  buildCost: 10
+  buildCost: 20
 --- !u!1 &279502417
 GameObject:
   m_ObjectHideFlags: 0
@@ -264,11 +264,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6696c5397e0bd5442917bbbb6287f1c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
-  startingEnemies: 5
-  spawnInterval: 0.8
+  startingEnemies: 3
+  spawnInterval: 0.5
   timeBetweenWaves: 3
   goldManager: {fileID: 1866200237}
   goldPerEnemy: 5
+  initialWaveDelay: 10
+  timePerEnemy: 10
 --- !u!1 &356801501
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,7 +317,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildHUDController
   modeText: {fileID: 676192579}
   buildingText: {fileID: 677577227}
-  MoneyText: {fileID: 1574697151}
+  moneyText: {fileID: 1574697151}
+  goldManager: {fileID: 1866200237}
 --- !u!1 &454460585
 GameObject:
   m_ObjectHideFlags: 0
@@ -1375,7 +1378,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c212b6572e6599744bc48f9622acd3ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoldManager
-  startingGold: 50
+  startingGold: 30
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

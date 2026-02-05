@@ -18,7 +18,7 @@ public class Enemy : MonoBehaviour
 
     private float slowMultiplier = 1f;
     private float slowTimer;
-    public event Action<Enemy> OnEnemyDied;
+    public event Action<Enemy, EnemyDeathReason> OnEnemyDied;
     public void SetTarget(Transform nexus)
     {
         target = nexus;
@@ -63,15 +63,17 @@ public class Enemy : MonoBehaviour
         Debug.Log("I took damage, my life is now " + health);
         if (health <= 0)
         {
-            Die();
+            DieByDamage();
         }
     }
 
-    private void Die()
+    private void DieByDamage()
     {
-        OnEnemyDied?.Invoke(this);
+        OnEnemyDied?.Invoke(this, EnemyDeathReason.KilledByTower);
         Destroy(gameObject);
     }
+
+
 
     public void Initialize(GridManager gridManager, Vector2Int targetCell)
     {
@@ -107,7 +109,8 @@ public class Enemy : MonoBehaviour
             return;
 
         nexus.TakeDamage(damageToNexus);
-        Die();
+        OnEnemyDied?.Invoke(this, EnemyDeathReason.ReachedNexus);
+        Destroy(gameObject);
     }
 
     // ESTADOS

@@ -108,7 +108,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 2
   health: 3
-  damageToNexus: 1
+  damageToNexus: 3
 --- !u!61 &5026883441068123498
 BoxCollider2D:
   m_ObjectHideFlags: 0

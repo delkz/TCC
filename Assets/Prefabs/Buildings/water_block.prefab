@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 1600908817014779697}
   - component: {fileID: 7533303412708995018}
   - component: {fileID: -241019041381532068}
-  m_Layer: 0
+  - component: {fileID: 974854805575210893}
+  m_Layer: 7
   m_Name: water_block
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -138,3 +139,17 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &974854805575210893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3950415348843120721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36bd33b82a1d7f34c8ffb67dc5582cf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Buildable
+  buildCost: 5
+  canBeDestroyed: 0

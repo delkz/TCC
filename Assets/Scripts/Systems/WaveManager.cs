@@ -12,10 +12,13 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private GoldManager goldManager;
     [SerializeField] private int goldPerEnemy = 5;
     private EnemySpawnPoint spawnPoint;
-
+    [Header("Timing Balance")]
+    [SerializeField] private float initialWaveDelay = 10f;
+    [SerializeField] private float timePerEnemy = 10f;
     private int currentWave = 0;
     private bool waveInProgress;
-
+    private float waveTimer;
+    private float maxWaveDuration;
     private readonly List<Enemy> aliveEnemies = new();
     private int enemiesRemaining;
 
@@ -33,18 +36,49 @@ public class WaveManager : MonoBehaviour
         }
 
         Debug.Log("EnemySpawnPoint encontrado. Iniciando waves.");
+        yield return new WaitForSeconds(initialWaveDelay);
         StartNextWave();
     }
     private void StartNextWave()
     {
         currentWave++;
-        int enemiesToSpawn = startingEnemies + (currentWave - 1) * 2;
+
+        enemiesRemaining = startingEnemies + (currentWave - 1) * 2;
+
+        maxWaveDuration = enemiesRemaining * timePerEnemy;
+        waveTimer = maxWaveDuration;
+
         waveInProgress = true;
 
-        Debug.Log($"Wave {currentWave} iniciada. Inimigos: {enemiesToSpawn}");
+        Debug.Log(
+            $"Wave {currentWave} iniciada | Inimigos: {enemiesRemaining} | Tempo máximo: {maxWaveDuration}s"
+        );
 
-        StartCoroutine(SpawnWave(enemiesToSpawn));
+        StartCoroutine(SpawnWave(enemiesRemaining));
     }
+    private void Update()
+    {
+        if (!waveInProgress)
+            return;
+
+        waveTimer -= Time.deltaTime;
+
+        if (waveTimer <= 0f)
+        {
+            Debug.Log($"Wave {currentWave} forçada pelo tempo!");
+            ForceEndWave();
+        }
+    }
+    private void ForceEndWave()
+    {
+        waveInProgress = false;
+
+        // opcional: limpar lista para não bloquear próxima wave
+        aliveEnemies.Clear();
+
+        StartCoroutine(WaitForNextWave());
+    }
+
 
     private IEnumerator SpawnWave(int amount)
     {
@@ -59,11 +93,11 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-    private void HandleEnemyDeath(Enemy enemy)
+    private void HandleEnemyDeath(Enemy enemy, EnemyDeathReason reason)
     {
         aliveEnemies.Remove(enemy);
 
-        if (goldManager != null)
+        if (reason == EnemyDeathReason.KilledByTower && goldManager != null)
         {
             goldManager.Add(goldPerEnemy);
         }
@@ -71,7 +105,6 @@ public class WaveManager : MonoBehaviour
         if (aliveEnemies.Count == 0 && waveInProgress)
         {
             waveInProgress = false;
-            Debug.Log($"Wave {currentWave} finalizada!");
             StartCoroutine(WaitForNextWave());
         }
     }
