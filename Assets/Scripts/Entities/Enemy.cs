@@ -8,8 +8,9 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float maxHealth = 10f;
     [SerializeField] private float speed = 2f;
     [SerializeField] private int damage = 1;
-
+    [SerializeField] private int prize = 5;
     public int GetDamage() => damage;
+    public int GetPrize() => prize;
     public event Action<Enemy, EnemyDeathReason> OnEnemyDied;
 
     private float currentHealth;

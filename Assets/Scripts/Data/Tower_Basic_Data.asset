@@ -21,6 +21,6 @@ MonoBehaviour:
   damage: 45
   attackCooldown: 1.25
   range: 12
-  slowAmount: 1
+  slowAmount: 0.5
   slowDuration: 4
   knockback: 0

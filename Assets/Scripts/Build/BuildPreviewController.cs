@@ -128,6 +128,13 @@ public class BuildPreviewController : MonoBehaviour
             Quaternion.identity
         );
 
+        if(CurrentBuilding.icon != null)
+        {
+            SpriteRenderer sr = building.GetComponent<SpriteRenderer>();
+            if(sr != null)
+                sr.sprite = CurrentBuilding.icon;
+        }
+
         gridManager.SetCellOccupant(currentGridPos, building);
     }
 

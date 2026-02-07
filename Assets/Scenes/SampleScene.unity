@@ -775,7 +775,7 @@ MonoBehaviour:
   gridTilePrefab: {fileID: 3950415348843120721, guid: e93d20d200c59a546b50944f3ac78028, type: 3}
   nexusPrefab: {fileID: 3950415348843120721, guid: 41c3c9f105f71ec4bae908feb4dafc90, type: 3}
   enemySpawnPrefab: {fileID: 3950415348843120721, guid: 925ab2f7ec9839e46917da373589263e, type: 3}
-  mapAsset: {fileID: 11400000, guid: 31d751eb296ac144e8a971ab197564f1, type: 2}
+  mapAsset: {fileID: 11400000, guid: b87ec86f2cf77864288c431b53996c26, type: 2}
   cellSize: 1
 --- !u!4 &577640071
 Transform:

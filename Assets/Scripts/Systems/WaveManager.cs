@@ -10,8 +10,8 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private float timeBetweenWaves = 3f;
     [Header("Gold Settings")]
     [SerializeField] private GoldManager goldManager;
-    [SerializeField] private int goldPerEnemy = 5;
     private EnemySpawnPoint spawnPoint;
+    
     [Header("Timing Balance")]
     [SerializeField] private float initialWaveDelay = 10f;
     [SerializeField] private float timePerEnemy = 10f;
@@ -48,16 +48,24 @@ public class WaveManager : MonoBehaviour
     {
         currentWave++;
 
-        enemiesRemaining = startingEnemies + (currentWave - 1) * 2;
+        enemiesRemaining = Mathf.RoundToInt(
+            startingEnemies * Mathf.Pow(1.25f, currentWave - 1)
+        );
 
-        // maxWaveDuration = enemiesRemaining * timePerEnemy;
-        maxWaveDuration = Mathf.Floor(30f + (enemiesRemaining * timePerEnemy / 3f)); // ajuste para balancear
+        float baseTime = 30f;
+        float waveBonus = currentWave * 2f;
+
+        maxWaveDuration = Mathf.Clamp(
+            baseTime + waveBonus,
+            30f,
+            75f
+        );
+
         waveTimer = maxWaveDuration;
-
         waveInProgress = true;
 
         UILogger.Log(
-            $"Wave {currentWave} iniciada | Inimigos: {enemiesRemaining} | Tempo máximo: {maxWaveDuration}s"
+            $"Wave {currentWave} | Inimigos: {enemiesRemaining} | Tempo máx: {maxWaveDuration}s"
         );
 
         StartCoroutine(SpawnWave(enemiesRemaining));
@@ -108,7 +116,7 @@ public class WaveManager : MonoBehaviour
 
         if (reason == EnemyDeathReason.KilledByPlayer)
         {
-            goldManager.Add(goldPerEnemy);
+            goldManager.Add(enemy.GetPrize());
         }
         else if (reason == EnemyDeathReason.ReachedGoal)
         {
