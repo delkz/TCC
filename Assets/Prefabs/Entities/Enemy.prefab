@@ -107,7 +107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   maxHealth: 100
-  speed: 1
+  speed: 1.2
   damage: 2
   prize: 1
 --- !u!61 &5026883441068123498

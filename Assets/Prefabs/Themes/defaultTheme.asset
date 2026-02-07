@@ -16,7 +16,7 @@ MonoBehaviour:
   pathSprite: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
   spawnSprite: {fileID: 0}
   goalSprite: {fileID: 0}
-  blockedSprite: {fileID: 0}
+  blockedSprite: {fileID: -5500308063243910897, guid: f5de236c1ac65934e8e4928eeede31aa, type: 3}
   emptyColor: {r: 0.24857599, g: 0.9245283, b: 0.3245542, a: 1}
   pathColor: {r: 0.8025643, g: 0.9339623, b: 0.53306335, a: 1}
   spawnColor: {r: 0, g: 1, b: 0, a: 1}

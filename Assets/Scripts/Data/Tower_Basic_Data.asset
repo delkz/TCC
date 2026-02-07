@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingName: Tower
   prefab: {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
-  icon: {fileID: 0}
+  icon: {fileID: 6991795282918457499, guid: 2ccccda8ee978754aa48e7c59c6e2a83, type: 3}
   buildCost: 25
   refundPercent: 0.66
   canBeDestroyed: 1

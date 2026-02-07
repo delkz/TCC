@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingName: Tower Fast
   prefab: {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
-  icon: {fileID: 0}
+  icon: {fileID: -3406780426092485941, guid: a2e7fe73b8f8a7a428da276abce559b6, type: 3}
   buildCost: 15
   refundPercent: 0.66
   canBeDestroyed: 1
