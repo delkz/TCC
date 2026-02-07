@@ -4,8 +4,9 @@ using System;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    public event System.Action<bool> OnPauseChanged;
-    public event System.Action<float> OnSpeedChanged;
+
+    public event Action<bool> OnPauseChanged;
+    public event Action<float> OnSpeedChanged;
 
     public enum GameState
     {
@@ -15,7 +16,15 @@ public class GameManager : MonoBehaviour
 
     public GameState CurrentState { get; private set; } = GameState.Running;
 
-    private float gameSpeed = 1f;
+    // ================= SPEED =================
+
+    [SerializeField]
+    private float[] speedLevels = { 1f, 2f, 5f };
+
+    private int currentSpeedIndex = 0;
+    private float gameSpeed => speedLevels[currentSpeedIndex];
+
+    // ================= UNITY =================
 
     private void Awake()
     {
@@ -32,7 +41,10 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         ApplyTimeScale();
+        OnSpeedChanged?.Invoke(gameSpeed);
     }
+
+    // ================= PAUSE =================
 
     public void TogglePause()
     {
@@ -50,15 +62,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // ================= SPEED =================
+
     public void ToggleSpeed()
     {
-        gameSpeed = gameSpeed == 1f ? 2f : 1f;
+        currentSpeedIndex++;
+
+        if (currentSpeedIndex >= speedLevels.Length)
+            currentSpeedIndex = 0;
 
         if (CurrentState == GameState.Running)
             ApplyTimeScale();
 
         OnSpeedChanged?.Invoke(gameSpeed);
     }
+
     private void ApplyTimeScale()
     {
         Time.timeScale = gameSpeed;

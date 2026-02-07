@@ -229,7 +229,7 @@ GameObject:
   - component: {fileID: 157352742}
   - component: {fileID: 157352741}
   m_Layer: 5
-  m_Name: ModeText
+  m_Name: Instructions
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -274,7 +274,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[tab] Switch Mode
+  m_text: '[TAB] Switch Mode
 
     [Q | E] Change structure
 
@@ -406,6 +406,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17ac40c7b34937949aa12c589f5043fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  speedLevels:
+  - 1
+  - 2
+  - 5
 --- !u!114 &276565581
 MonoBehaviour:
   m_ObjectHideFlags: 0
