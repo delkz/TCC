@@ -86,4 +86,24 @@ public class GameManager : MonoBehaviour
     {
         return gameSpeed;
     }
+
+    // ================= UTILITÁRIOS =================
+    public void ResetTime()
+    {
+        CurrentState = GameState.Running;
+        Time.timeScale = 1f;
+        OnPauseChanged?.Invoke(false);
+    }
+
+    public void ReturnToMenu()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetTime();
+        }
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+    }
+
+
 }

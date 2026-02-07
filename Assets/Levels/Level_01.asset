@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10e63cd4b6687304d9bdb75c8c0e76fb, type: 3}
+  m_Name: Level_01
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  levelId: Level_01
+  levelName: Planices Tranquilas
+  description: Uma caminhada no parque
+  map: {fileID: 11400000, guid: b87ec86f2cf77864288c431b53996c26, type: 2}
+  startingGold: 60
+  enemyHealthMultiplier: 1
+  enemySpeedMultiplier: 1
+  nexusHealth: 10
+  requiredCompletedLevels: []

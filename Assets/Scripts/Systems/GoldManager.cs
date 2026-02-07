@@ -3,15 +3,28 @@ using System;
 
 public class GoldManager : MonoBehaviour
 {
-    [SerializeField] private int startingGold = 50;
-
     public int CurrentGold { get; private set; }
 
     public event Action<int> OnGoldChanged;
-
+    public void SetInitialGold(int amount)
+    {
+        CurrentGold = amount;
+        OnGoldChanged?.Invoke(CurrentGold);
+    }
     private void Awake()
     {
-        CurrentGold = startingGold;
+        if (GameSession.Instance == null || GameSession.Instance.SelectedLevel == null)
+        {
+            Debug.LogWarning("Gameplay iniciada sem LevelData (modo debug).");
+            return;
+        }
+
+        LevelData level = GameSession.Instance.SelectedLevel;
+
+        if (level == null)
+            return;
+
+        SetInitialGold(level.startingGold);
         OnGoldChanged?.Invoke(CurrentGold);
         Debug.Log($"Gold inicial: {CurrentGold}");
     }

@@ -11,7 +11,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject gridTilePrefab;
     [SerializeField] private GameObject nexusPrefab;
     [SerializeField] private GameObject enemySpawnPrefab;
-    [SerializeField] private GridMapAsset mapAsset;
+    private GridMapAsset mapAsset;
 
     [Header("Grid Settings")]
     [SerializeField] private float cellSize = 1f;
@@ -31,7 +31,23 @@ public class GridManager : MonoBehaviour
 
     private void Awake()
     {
-        LoadMap(mapAsset);
+        if (GameSession.Instance == null || GameSession.Instance.SelectedLevel == null)
+{
+    Debug.LogWarning("Gameplay iniciada sem LevelData (modo debug).");
+    return;
+}
+
+
+        LevelData level = GameSession.Instance.SelectedLevel;
+
+        if (level == null || level.map == null)
+        {
+            Debug.LogError("GridManager: LevelData ou mapa não definido.");
+            return;
+        }
+
+        mapAsset = level.map;
+        LoadMap(level.map);
     }
 
     // ===================== MAP LOADING =====================

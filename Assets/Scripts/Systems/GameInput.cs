@@ -18,4 +18,6 @@ public class GameInput : MonoBehaviour
             GameManager.Instance.ToggleSpeed();
         }
     }
+
+    
 }

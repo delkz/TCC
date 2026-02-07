@@ -46,6 +46,7 @@ public class EnemySpawnPoint : MonoBehaviour
         );
 
         enemy.Initialize(path, gridManager);
+        enemy.ApplyDifficulty(GameSession.Instance.SelectedLevel);
         return enemy;
     }
 

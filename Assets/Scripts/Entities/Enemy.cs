@@ -39,6 +39,14 @@ public class Enemy : MonoBehaviour
         MoveAlongPath();
     }
 
+    public void ApplyDifficulty(LevelData level)
+    {
+        maxHealth *= level.enemyHealthMultiplier;
+        speed *= level.enemySpeedMultiplier;
+        currentHealth = maxHealth;
+    }
+
+
     // ===================== MOVEMENT =====================
 
     private void MoveAlongPath()
