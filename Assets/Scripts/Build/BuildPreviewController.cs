@@ -17,7 +17,7 @@ public class BuildPreviewController : MonoBehaviour
     [SerializeField] private BuildMode currentMode = BuildMode.Build;
 
     [Header("UI")]
-    [SerializeField] private BuildHUDController hudController;
+    [SerializeField] private GameHUDController hudController;
 
     [Header("Economy")]
     [SerializeField] private GoldManager goldManager;
