@@ -86,8 +86,8 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.9706241, g: 1, b: 0, a: 1}
+  m_Sprite: {fileID: 6991795282918457499, guid: 2ccccda8ee978754aa48e7c59c6e2a83, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -134,7 +134,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.46, y: 0.59}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -192,6 +192,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefenseTower
   projectilePrefab: {fileID: 7952981263758822899, guid: 3a4d591836a298540a55a0e4d352f7c7, type: 3}
   firePoint: {fileID: 8392376936485530851}
+  rotatingPart: {fileID: 1600908817014779697}
 --- !u!114 &-3655225227065811260
 MonoBehaviour:
   m_ObjectHideFlags: 0

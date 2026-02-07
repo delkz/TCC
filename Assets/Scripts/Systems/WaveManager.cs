@@ -21,21 +21,23 @@ public class WaveManager : MonoBehaviour
     private float maxWaveDuration;
     private readonly List<Enemy> aliveEnemies = new();
     private int enemiesRemaining;
-
+    [SerializeField] private Nexus nexus;
 
     private void Start()
     {
         StartCoroutine(WaitForSpawnerAndStart());
     }
+
     private IEnumerator WaitForSpawnerAndStart()
     {
-        while (spawnPoint == null)
+        while (spawnPoint == null && nexus == null)
         {
             spawnPoint = FindObjectOfType<EnemySpawnPoint>();
-            yield return null; // espera pr�ximo frame
+            nexus = FindObjectOfType<Nexus>();
+            yield return null; // espera próximo frame
         }
 
-        UILogger.Log("EnemySpawnPoint encontrado. Iniciando waves.");
+        UILogger.Log("EnemySpawnPoint e Nexus encontrados. Iniciando waves.");
         UILogger.Log(
             $"Wave iniciando em {initialWaveDelay} segundos... Prepare-se!"
         );
@@ -100,17 +102,36 @@ public class WaveManager : MonoBehaviour
     private void HandleEnemyDeath(Enemy enemy, EnemyDeathReason reason)
     {
         aliveEnemies.Remove(enemy);
+        enemiesRemaining--;
 
-        if (reason == EnemyDeathReason.KilledByTower && goldManager != null)
+        UILogger.Log($"Inimigo morto | Razão: {reason} | Inimigos restantes: {enemiesRemaining} | Dano recebido: {enemy.GetDamage()}");
+
+        if (reason == EnemyDeathReason.KilledByPlayer)
         {
             goldManager.Add(goldPerEnemy);
         }
-
-        if (aliveEnemies.Count == 0 && waveInProgress)
+        else if (reason == EnemyDeathReason.ReachedGoal)
         {
-            waveInProgress = false;
-            StartCoroutine(WaitForNextWave());
+            nexus.TakeDamage(enemy.GetDamage());
         }
+
+        CheckWaveComplete();
+    }
+
+    private void CheckWaveComplete()
+    {
+        // Se ainda há inimigos vivos, a wave continua
+        if (aliveEnemies.Count > 0)
+            return;
+
+        // Se ainda estamos spawnando inimigos, também não finaliza
+        if (waveInProgress && enemiesRemaining > aliveEnemies.Count)
+            return;
+
+        UILogger.Log($"Wave {currentWave} finalizada com sucesso!");
+
+        waveInProgress = false;
+        StartCoroutine(WaitForNextWave());
     }
 
 

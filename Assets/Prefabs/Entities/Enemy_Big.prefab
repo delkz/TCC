@@ -106,9 +106,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 470461903b2090b4bb3bfa9fed7ee0d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  maxHealth: 10
   speed: 0.5
-  health: 150
-  damageToNexus: 5
+  damage: 5
 --- !u!61 &5026883441068123498
 BoxCollider2D:
   m_ObjectHideFlags: 0

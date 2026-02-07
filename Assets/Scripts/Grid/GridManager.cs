@@ -1,115 +1,180 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class GridManager : MonoBehaviour
 {
     public event Action OnGridChanged;
-    [Header("Grid Settings")]
-    [SerializeField] private int width = 10;
-    [SerializeField] private int height = 10;
-    [SerializeField] private float cellSize = 1f;
 
-    [Header("World References")]
+    [Header("References")]
     [SerializeField] private Camera mainCamera;
-    [SerializeField] private GameObject worldSprite;
-
-    [Header("Map Entities")]
+    [SerializeField] private GameObject gridTilePrefab;
     [SerializeField] private GameObject nexusPrefab;
     [SerializeField] private GameObject enemySpawnPrefab;
+    [SerializeField] private GridMapAsset mapAsset;
 
-    // ===================== DATA =====================
+    [Header("Grid Settings")]
+    [SerializeField] private float cellSize = 1f;
 
-    [System.Serializable]
-    private class Cell
-    {
-        public int x;
-        public int y;
-        public bool IsOccupied => occupant != null;
-        public bool isBuildable;
-        public GameObject occupant;
-        public Cell(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-            isBuildable = true;
-            occupant = null;
-        }
+    // ===================== STATE =====================
 
-    }
+    private int width;
+    private int height;
 
-    private Cell[,] grid;
+    private GridCell[,] grid;
+    private GameObject[,] tileVisuals;
 
-    private class PathNode
-    {
-        public int x;
-        public int y;
-        public int gCost;
-        public int hCost;
-        public int fCost;
-        public PathNode cameFromNode;
-        public bool walkable;
-
-        public PathNode(int x, int y, bool walkable)
-        {
-            this.x = x;
-            this.y = y;
-            this.walkable = walkable;
-        }
-
-        public void CalculateFCost()
-        {
-            fCost = gCost + hCost;
-        }
-    }
-
-
-    // Preparação para Save / Load
-    [System.Serializable]
-    public class GridData
-    {
-        public int width;
-        public int height;
-        public CellData[] cells;
-    }
-
-    [System.Serializable]
-    public class CellData
-    {
-        public int x;
-        public int y;
-        public bool isOccupied;
-        public bool isBuildable;
-    }
+    private Vector2Int spawnCell;
+    private Vector2Int goalCell;
 
     // ===================== UNITY =====================
 
     private void Awake()
     {
-        CreateGrid();
-        SpawnNexus();
-        SpawnEnemySpawnPoint();
+        LoadMap(mapAsset);
     }
 
-    // ===================== GRID =====================
+    // ===================== MAP LOADING =====================
 
-    private void CreateGrid()
+    public void LoadMap(GridMapAsset map)
     {
-        grid = new Cell[width, height];
-
-        for (int x = 0; x < width; x++)
+        if (map == null)
         {
-            for (int y = 0; y < height; y++)
-            {
-                grid[x, y] = new Cell(x, y);
-            }
+            Debug.LogError("GridManager: MapAsset não atribuído.");
+            return;
         }
 
-        Debug.Log($"Grid criado: {width} x {height}");
+        width = map.width;
+        height = map.height;
 
+        CreateGridFromMap(map);
+        GenerateGridVisual();
+        SpawnMapEntities();
         CenterCamera();
-        ResizeWorld();
+
+        DebugPath();
     }
+
+    private void CreateGridFromMap(GridMapAsset map)
+    {
+        grid = new GridCell[width, height];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                CellType type = map.GetCell(x, y);
+                grid[x, y] = new GridCell(x, y, type);
+
+                if (type == CellType.Spawn)
+                    spawnCell = new Vector2Int(x, y);
+
+                if (type == CellType.Goal)
+                    goalCell = new Vector2Int(x, y);
+            }
+        }
+    }
+
+    // ===================== VISUAL GRID =====================
+
+    private void GenerateGridVisual()
+    {
+        tileVisuals = new GameObject[width, height];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                GridCell cell = grid[x, y];
+
+                GameObject tile = Instantiate(
+                    gridTilePrefab,
+                    GridToWorldCenter(new Vector2Int(x, y)),
+                    Quaternion.identity,
+                    transform
+                );
+
+                tile.name = $"Tile_{x}_{y}";
+
+                SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+                ApplyTheme(sr, cell.type);
+
+                tileVisuals[x, y] = tile;
+            }
+        }
+    }
+
+    private void ApplyTheme(SpriteRenderer sr, CellType type)
+    {
+        GridTheme theme = mapAsset.theme;
+
+        if (theme == null)
+        {
+            sr.color = Color.magenta;
+            return;
+        }
+
+        Sprite sprite = type switch
+        {
+            CellType.Path => theme.pathSprite,
+            CellType.Spawn => theme.spawnSprite,
+            CellType.Goal => theme.goalSprite,
+            CellType.Blocked => theme.blockedSprite,
+            _ => theme.emptySprite
+        };
+
+        if (sprite != null)
+        {
+            sr.sprite = sprite;
+            sr.color = Color.white;
+        }
+        else
+        {
+            // fallback visual
+            sr.sprite = null;
+            sr.color = type switch
+            {
+                CellType.Path => theme.pathColor,
+                CellType.Spawn => theme.spawnColor,
+                CellType.Goal => theme.goalColor,
+                CellType.Blocked => theme.blockedColor,
+                _ => theme.emptyColor
+            };
+        }
+    }
+
+
+    // ===================== MAP ENTITIES =====================
+
+    private void SpawnMapEntities()
+    {
+        SpawnEnemySpawnPoint();
+        SpawnNexus();
+    }
+
+    private void SpawnEnemySpawnPoint()
+    {
+        GameObject spawnGO = Instantiate(
+            enemySpawnPrefab,
+            GridToWorldCenter(spawnCell),
+            Quaternion.identity
+        );
+
+        SetCellOccupant(spawnCell, spawnGO);
+    }
+
+    private void SpawnNexus()
+    {
+        GameObject nexus = Instantiate(
+            nexusPrefab,
+            GridToWorldCenter(goalCell),
+            Quaternion.identity
+        );
+
+        SetCellOccupant(goalCell, nexus);
+    }
+
+    // ===================== GRID API =====================
 
     public bool IsValidCell(int x, int y)
     {
@@ -121,25 +186,90 @@ public class GridManager : MonoBehaviour
         if (!IsValidCell(x, y))
             return false;
 
-        return !grid[x, y].IsOccupied && grid[x, y].isBuildable;
+        GridCell cell = grid[x, y];
+        return !cell.IsOccupied && cell.isBuildable;
     }
 
-    public void SetCellOccupant(int x, int y, GameObject occupant)
+    public void SetCellOccupant(Vector2Int pos, GameObject occupant)
     {
-        if (!IsValidCell(x, y))
+        if (!IsValidCell(pos.x, pos.y))
             return;
 
-        grid[x, y].occupant = occupant;
+        grid[pos.x, pos.y].occupant = occupant;
         OnGridChanged?.Invoke();
     }
 
-    public GameObject GetCellOccupant(int x, int y)
+    public GameObject GetCellOccupant(Vector2Int pos)
     {
-        if (!IsValidCell(x, y))
+        if (!IsValidCell(pos.x, pos.y))
             return null;
 
-        return grid[x, y].occupant;
+        return grid[pos.x, pos.y].occupant;
     }
+
+    // ===================== PATH (LINEAR, MAP-DEFINED) =====================
+
+    public List<Vector2Int> BuildPath()
+    {
+        List<Vector2Int> path = new();
+        HashSet<Vector2Int> visited = new();
+
+        Vector2Int current = spawnCell;
+        path.Add(current);
+        visited.Add(current);
+
+        while (current != goalCell)
+        {
+            Vector2Int next = GetNextPathCell(current, visited);
+
+            if (next == current)
+            {
+                Debug.LogError("GridManager: Caminho inválido no mapa.");
+                break;
+            }
+
+            current = next;
+            path.Add(current);
+            visited.Add(current);
+        }
+
+        return path;
+    }
+
+    private Vector2Int GetNextPathCell(Vector2Int current, HashSet<Vector2Int> visited)
+    {
+        Vector2Int[] dirs =
+        {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right
+        };
+
+        foreach (var dir in dirs)
+        {
+            Vector2Int next = current + dir;
+
+            if (!IsValidCell(next.x, next.y))
+                continue;
+
+            if (visited.Contains(next))
+                continue;
+
+            if (grid[next.x, next.y].IsPath || grid[next.x, next.y].IsGoal)
+                return next;
+        }
+
+        return current;
+    }
+
+    private void DebugPath()
+    {
+        foreach (var cell in BuildPath())
+            Debug.Log($"Path cell: {cell}");
+    }
+
+    // ===================== COORDINATES =====================
 
     public Vector2Int WorldToGridPosition(Vector3 worldPosition)
     {
@@ -151,296 +281,26 @@ public class GridManager : MonoBehaviour
     public Vector3 GridToWorldCenter(Vector2Int gridPos)
     {
         return new Vector3(
-            gridPos.x + cellSize / 2f,
-            gridPos.y + cellSize / 2f,
+            gridPos.x * cellSize + cellSize / 2f,
+            gridPos.y * cellSize + cellSize / 2f,
             0f
         );
     }
 
-    public bool CanBlockCell(Vector2Int cellToBlock)
-    {
-        // célula inválida ou já ocupada
-        if (!IsValidCell(cellToBlock.x, cellToBlock.y))
-            return false;
-
-        if (grid[cellToBlock.x, cellToBlock.y].IsOccupied)
-            return false;
-
-        // salva ocupante atual
-        GameObject previousOccupant = grid[cellToBlock.x, cellToBlock.y].occupant;
-
-        // simula bloqueio
-        grid[cellToBlock.x, cellToBlock.y].occupant = gameObject; // dummy blocker
-
-        Vector2Int start = GetEnemySpawnCell();
-        Vector2Int end = GetGridCenterCell();
-
-        var path = FindPath(start, end);
-
-        // desfaz simulação
-        grid[cellToBlock.x, cellToBlock.y].occupant = previousOccupant;
-
-        return path != null && path.Count > 0;
-    }
-
-
-    // ===================== MAP ENTITIES =====================
-
-    private void SpawnNexus()
-    {
-        if (nexusPrefab == null)
-        {
-            Debug.LogWarning("Nexus prefab não atribuído.");
-            return;
-        }
-
-        Vector2Int cell = GetGridCenterCell();
-
-
-        GameObject nexus = Instantiate(
-            nexusPrefab,
-            GridToWorldCenter(cell),
-            Quaternion.identity
-        );
-
-        SetCellOccupant(cell.x, cell.y, nexus);
-    }
-
-    private void SpawnEnemySpawnPoint()
-    {
-        if (enemySpawnPrefab == null)
-        {
-            Debug.LogWarning("EnemySpawn ou Enemy prefab não atribuído.");
-            return;
-        }
-
-        Vector2Int cell = GetEnemySpawnCell();
-
-        GameObject spawnGO = Instantiate(
-            enemySpawnPrefab,
-            GridToWorldCenter(cell),
-            Quaternion.identity
-        );
-
-        EnemySpawnPoint spawnPoint = spawnGO.GetComponent<EnemySpawnPoint>();
-        Nexus nexus = FindObjectOfType<Nexus>();
-
-        if (spawnPoint == null || nexus == null)
-        {
-            Debug.LogError("Erro ao inicializar EnemySpawnPoint.");
-            return;
-        }
-
-        spawnPoint.Initialize(
-            nexus,
-            this // 🔹 GridManager da cena
-        );
-
-        SetCellOccupant(cell.x, cell.y, spawnGO);
-    }
-
-
-
-    // ===================== POSITIONS =====================
-
-    public Vector2Int GetGridCenterCell()
-    {
-        return new Vector2Int(
-            Mathf.FloorToInt(width / 2f),
-            Mathf.FloorToInt(height / 2f)
-        );
-    }
-
-    public Vector2Int GetEnemySpawnCell()
-    {
-        return new Vector2Int(
-            0,
-            Mathf.FloorToInt(height / 2f)
-        );
-    }
-
-    private List<PathNode> FindPathInternal(Vector2Int start, Vector2Int end)
-    {
-        PathNode[,] nodes = new PathNode[width, height];
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                nodes[x, y] = new PathNode(
-                    x,
-                    y,
-                    !grid[x, y].IsOccupied
-                );
-            }
-        }
-
-        PathNode startNode = nodes[start.x, start.y];
-        PathNode endNode = nodes[end.x, end.y];
-
-        startNode.walkable = true;
-        endNode.walkable = true;
-
-        List<PathNode> openList = new() { startNode };
-        HashSet<PathNode> closedList = new();
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                PathNode node = nodes[x, y];
-                node.gCost = int.MaxValue;
-                node.CalculateFCost();
-                node.cameFromNode = null;
-            }
-        }
-
-        startNode.gCost = 0;
-        startNode.hCost = CalculateDistance(startNode, endNode);
-        startNode.CalculateFCost();
-
-        while (openList.Count > 0)
-        {
-            PathNode currentNode = GetLowestFCostNode(openList);
-
-            if (currentNode == endNode)
-                return CalculatePath(endNode);
-
-            openList.Remove(currentNode);
-            closedList.Add(currentNode);
-
-            foreach (PathNode neighbor in GetNeighbors(currentNode, nodes))
-            {
-                if (closedList.Contains(neighbor))
-                    continue;
-
-                if (!neighbor.walkable)
-                {
-                    closedList.Add(neighbor);
-                    continue;
-                }
-
-                int tentativeGCost = currentNode.gCost + CalculateDistance(currentNode, neighbor);
-
-                if (tentativeGCost < neighbor.gCost)
-                {
-                    neighbor.cameFromNode = currentNode;
-                    neighbor.gCost = tentativeGCost;
-                    neighbor.hCost = CalculateDistance(neighbor, endNode);
-                    neighbor.CalculateFCost();
-
-                    if (!openList.Contains(neighbor))
-                        openList.Add(neighbor);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private List<PathNode> GetNeighbors(PathNode node, PathNode[,] nodes)
-    {
-        List<PathNode> neighbors = new();
-
-        if (node.x - 1 >= 0) neighbors.Add(nodes[node.x - 1, node.y]);
-        if (node.x + 1 < width) neighbors.Add(nodes[node.x + 1, node.y]);
-        if (node.y - 1 >= 0) neighbors.Add(nodes[node.x, node.y - 1]);
-        if (node.y + 1 < height) neighbors.Add(nodes[node.x, node.y + 1]);
-
-        return neighbors;
-    }
-
-    private int CalculateDistance(PathNode a, PathNode b)
-    {
-        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
-    }
-
-    private PathNode GetLowestFCostNode(List<PathNode> nodes)
-    {
-        PathNode lowest = nodes[0];
-
-        for (int i = 1; i < nodes.Count; i++)
-        {
-            if (nodes[i].fCost < lowest.fCost)
-                lowest = nodes[i];
-        }
-
-        return lowest;
-    }
-
-    private List<PathNode> CalculatePath(PathNode endNode)
-    {
-        List<PathNode> path = new();
-        PathNode current = endNode;
-
-        while (current != null)
-        {
-            path.Add(current);
-            current = current.cameFromNode;
-        }
-
-        path.Reverse();
-        return path;
-    }
-
-
-    public List<Vector3> FindPath(Vector2Int start, Vector2Int end)
-    {
-        List<PathNode> path = FindPathInternal(start, end);
-        if (path == null)
-            return null;
-
-        List<Vector3> worldPath = new();
-
-        foreach (PathNode node in path)
-        {
-            worldPath.Add(GridToWorldCenter(new Vector2Int(node.x, node.y)));
-        }
-
-        return worldPath;
-    }
-
-
-    // ===================== VISUAL =====================
+    // ===================== CAMERA =====================
 
     private void CenterCamera()
     {
         if (mainCamera == null)
             return;
 
+        float worldWidth = width * cellSize;
+        float worldHeight = height * cellSize;
+
         mainCamera.transform.position = new Vector3(
-            width / 2f,
-            height / 2f,
+            worldWidth / 2f,
+            worldHeight / 2f,
             -10f
         );
-    }
-
-    private void ResizeWorld()
-    {
-        if (worldSprite == null)
-            return;
-
-        Transform t = worldSprite.transform;
-        t.localScale = new Vector3(width, height, 1f);
-        t.position = new Vector3(width / 2f, height / 2f, 0f);
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.gray;
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                Vector3 center = new Vector3(
-                    x + cellSize / 2f,
-                    y + cellSize / 2f,
-                    0f
-                );
-
-                Gizmos.DrawWireCube(center, Vector3.one * cellSize);
-            }
-        }
     }
 }

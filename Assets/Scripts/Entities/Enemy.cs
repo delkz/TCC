@@ -1,135 +1,105 @@
-using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
+
 public class Enemy : MonoBehaviour
 {
+    [Header("Stats")]
+    [SerializeField] private float maxHealth = 10f;
     [SerializeField] private float speed = 2f;
-    [SerializeField] private int health = 3;
-    public int CurrentHealth => health;
+    [SerializeField] private int damage = 1;
 
-    [SerializeField] private int damageToNexus = 1;
-    private List<Vector3> path;
-    private int pathIndex;
-
-    private Transform target;
-
-    private GridManager gridManager;
-    private Vector2Int targetCell;
-
-    private float slowMultiplier = 1f;
-    private float slowTimer;
+    public int GetDamage() => damage;
     public event Action<Enemy, EnemyDeathReason> OnEnemyDied;
-    public void SetTarget(Transform nexus)
+
+    private float currentHealth;
+    private float slowMultiplier = 1f;
+
+    private List<Vector2Int> path;
+    private int pathIndex;
+    private GridManager gridManager;
+
+    // ===================== INIT =====================
+
+    public void Initialize(List<Vector2Int> path, GridManager gridManager)
     {
-        target = nexus;
+        this.path = path;
+        this.gridManager = gridManager;
+
+        pathIndex = 0;
+        currentHealth = maxHealth;
+        slowMultiplier = 1f;
+
+        transform.position = gridManager.GridToWorldCenter(path[0]);
     }
 
     private void Update()
     {
+        MoveAlongPath();
+    }
+
+    // ===================== MOVEMENT =====================
+
+    private void MoveAlongPath()
+    {
         if (path == null || pathIndex >= path.Count)
             return;
 
-        float finalSpeed = speed * slowMultiplier;
+        Vector3 target = gridManager.GridToWorldCenter(path[pathIndex]);
 
         transform.position = Vector3.MoveTowards(
             transform.position,
-            path[pathIndex],
-            finalSpeed * Time.deltaTime
+            target,
+            speed * slowMultiplier * Time.deltaTime
         );
 
-        if (Vector3.Distance(transform.position, path[pathIndex]) < 0.05f)
+        if (Vector3.Distance(transform.position, target) < 0.05f)
         {
             pathIndex++;
-        }
 
-
-        if (slowTimer > 0f)
-        {
-            slowTimer -= Time.deltaTime;
-
-            if (slowTimer <= 0f)
+            // chegou ao final do caminho
+            if (pathIndex >= path.Count)
             {
-                slowMultiplier = 1f;
+                Die(EnemyDeathReason.ReachedGoal);
             }
         }
-
     }
 
+    // ===================== COMBAT =====================
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(float damage)
     {
+        currentHealth -= damage;
 
-        health -= damage;
-        Debug.Log("I took damage, my life is now " + health);
-        if (health <= 0)
+        if (currentHealth <= 0f)
         {
-            DieByDamage();
+            Die(EnemyDeathReason.KilledByPlayer);
         }
     }
 
-    private void DieByDamage()
+    public void ApplyKnockback(Vector3 direction, float force)
     {
-        OnEnemyDied?.Invoke(this, EnemyDeathReason.KilledByTower);
+        transform.position += direction.normalized * force;
+    }
+
+    public void ApplySlow(float slowAmount, float duration)
+    {
+        StopAllCoroutines();
+        StartCoroutine(SlowRoutine(slowAmount, duration));
+    }
+
+    private System.Collections.IEnumerator SlowRoutine(float slowAmount, float duration)
+    {
+        slowMultiplier = Mathf.Clamp01(1f - slowAmount);
+        yield return new WaitForSeconds(duration);
+        slowMultiplier = 1f;
+    }
+
+    // ===================== DEATH =====================
+
+    private void Die(EnemyDeathReason reason)
+    {
+        OnEnemyDied?.Invoke(this, reason);
         Destroy(gameObject);
     }
-
-
-
-    public void Initialize(GridManager gridManager, Vector2Int targetCell)
-    {
-        this.gridManager = gridManager;
-        this.targetCell = targetCell;
-
-        gridManager.OnGridChanged += RecalculatePath;
-        RecalculatePath();
-    }
-
-    private void OnDestroy()
-    {
-        if (gridManager != null)
-            gridManager.OnGridChanged -= RecalculatePath;
-    }
-    private void RecalculatePath()
-    {
-        Vector2Int currentCell = gridManager.WorldToGridPosition(transform.position);
-        var newPath = gridManager.FindPath(currentCell, targetCell);
-
-        if (newPath == null || newPath.Count == 0)
-            return;
-
-        path = newPath;
-        pathIndex = 0;
-    }
-
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        Nexus nexus = other.GetComponent<Nexus>();
-        if (nexus == null)
-            return;
-
-        nexus.TakeDamage(damageToNexus);
-        OnEnemyDied?.Invoke(this, EnemyDeathReason.ReachedNexus);
-        Destroy(gameObject);
-    }
-
-    // ESTADOS
-
-    public void ApplySlow(float amount, float duration)
-    {
-        float newMultiplier = Mathf.Clamp(1f - amount, 0.2f, 1f);
-
-        // mantém o slow mais forte
-        slowMultiplier = Mathf.Min(slowMultiplier, newMultiplier);
-
-        // renova duração se for maior
-        slowTimer = Mathf.Max(slowTimer, duration);
-    }
-
-    public void ApplyKnockback(Vector3 source, float force)
-    {
-        Vector3 dir = (transform.position - source).normalized;
-        transform.position += dir * force;
-    }
-
 }

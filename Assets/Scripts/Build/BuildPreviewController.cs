@@ -5,6 +5,8 @@ public class BuildPreviewController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private GoldManager goldManager;
+    [SerializeField] private GameHUDController hudController;
 
     [Header("Preview")]
     [SerializeField] private GameObject previewPrefab;
@@ -13,84 +15,67 @@ public class BuildPreviewController : MonoBehaviour
     [SerializeField] private BuildingData[] buildings;
     [SerializeField] private int selectedIndex = 0;
 
-    [Header("Mode")]
-    [SerializeField] private BuildMode currentMode = BuildMode.Build;
-
-    [Header("UI")]
-    [SerializeField] private GameHUDController hudController;
-
-    [Header("Economy")]
-    [SerializeField] private GoldManager goldManager;
-
     private GameObject previewInstance;
     private SpriteRenderer previewRenderer;
-
+    private BuildMode currentMode = BuildMode.Build;
     private Vector2Int currentGridPos;
     private bool canBuild;
 
-    private static readonly Color BUILD_VALID_COLOR = new(0f, 1f, 0f, 0.5f);
-    private static readonly Color BUILD_INVALID_COLOR = new(1f, 0f, 0f, 0.5f);
-    private static readonly Color DESTROY_COLOR = new(1f, 0f, 0f, 0.4f);
+    private static readonly Color VALID_COLOR = new(0f, 1f, 0f, 0.5f);
+    private static readonly Color INVALID_COLOR = new(1f, 0f, 0f, 0.5f);
 
-    // 🔹 Fonte única de verdade para o prédio selecionado
-    private BuildingData CurrentBuildingData => buildings[selectedIndex];
+    private BuildingData CurrentBuilding => buildings[selectedIndex];
 
     private void Start()
     {
         CreatePreview();
 
-        hudController.UpdateMode(currentMode);
         hudController.UpdateBuilding(
-            CurrentBuildingData.buildingName,
-            CurrentBuildingData.buildCost
+            CurrentBuilding.buildingName,
+            CurrentBuilding.buildCost
         );
     }
 
     private void Update()
     {
         HandleModeSwitch();
-        HandleBuildingSelection();
         UpdatePreview();
+        HandleInput();
+    }
 
+    private void HandleInput()
+    {
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            HandleActionClick();
+            if (currentMode == BuildMode.Build)
+                TryBuild();
+            else
+                TryDestroy();
+        }
+
+        if (currentMode == BuildMode.Build)
+        {
+            if (Keyboard.current.qKey.wasPressedThisFrame)
+                ChangeBuilding(-1);
+
+            if (Keyboard.current.eKey.wasPressedThisFrame)
+                ChangeBuilding(1);
         }
     }
 
-    // ================= INPUT =================
 
     private void HandleModeSwitch()
     {
-        if (!Keyboard.current.tabKey.wasPressedThisFrame)
-            return;
+        if (Keyboard.current.tabKey.wasPressedThisFrame)
+        {
+            currentMode = currentMode == BuildMode.Build
+                ? BuildMode.Destroy
+                : BuildMode.Build;
 
-        currentMode = currentMode == BuildMode.Build
-            ? BuildMode.Destroy
-            : BuildMode.Build;
-
-        hudController.UpdateMode(currentMode);
+            hudController.UpdateMode(currentMode);
+        }
     }
 
-    private void HandleBuildingSelection()
-    {
-        if (currentMode == BuildMode.Destroy)
-            return;
-
-        if (Keyboard.current.qKey.wasPressedThisFrame)
-            ChangeBuilding(-1);
-
-        if (Keyboard.current.eKey.wasPressedThisFrame)
-            ChangeBuilding(1);
-    }
-
-    private void HandleActionClick()
-    {
-        if (currentMode == BuildMode.Build)
-            TryBuild();
-        else
-            TryDestroy();
-    }
 
     // ================= PREVIEW =================
 
@@ -99,41 +84,26 @@ public class BuildPreviewController : MonoBehaviour
         if (previewRenderer == null)
             return;
 
-        Vector3 mousePosition = Mouse.current.position.ReadValue();
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-        worldPosition.z = 0f;
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        mouseWorld.z = 0f;
 
-        currentGridPos = gridManager.WorldToGridPosition(worldPosition);
+        currentGridPos = gridManager.WorldToGridPosition(mouseWorld);
 
         if (!gridManager.IsValidCell(currentGridPos.x, currentGridPos.y))
         {
-            previewRenderer.color = DESTROY_COLOR;
             canBuild = false;
+            previewRenderer.color = INVALID_COLOR;
             return;
         }
 
-        previewInstance.transform.position = GetCellCenter(currentGridPos);
-
-        if (currentMode == BuildMode.Destroy)
-        {
-            previewRenderer.enabled = false;
-            canBuild = false;
-            return;
-        }
-
-        previewRenderer.enabled = true;
+        previewInstance.transform.position =
+            gridManager.GridToWorldCenter(currentGridPos);
 
         canBuild =
             gridManager.IsCellBuildable(currentGridPos.x, currentGridPos.y) &&
-            gridManager.CanBlockCell(currentGridPos) &&
-            goldManager.CanAfford(CurrentBuildingData.buildCost);
+            goldManager.CanAfford(CurrentBuilding.buildCost);
 
-        previewRenderer.color = canBuild ? BUILD_VALID_COLOR : BUILD_INVALID_COLOR;
-    }
-
-    private Vector3 GetCellCenter(Vector2Int gridPos)
-    {
-        return new Vector3(gridPos.x + 0.5f, gridPos.y + 0.5f, 0f);
+        previewRenderer.color = canBuild ? VALID_COLOR : INVALID_COLOR;
     }
 
     private void CreatePreview()
@@ -141,6 +111,41 @@ public class BuildPreviewController : MonoBehaviour
         previewInstance = Instantiate(previewPrefab);
         previewRenderer = previewInstance.GetComponent<SpriteRenderer>();
     }
+
+    // ================= BUILD =================
+
+    private void TryBuild()
+    {
+        if (!canBuild)
+            return;
+
+        if (!goldManager.Spend(CurrentBuilding.buildCost))
+            return;
+
+        GameObject building = Instantiate(
+            CurrentBuilding.prefab,
+            gridManager.GridToWorldCenter(currentGridPos),
+            Quaternion.identity
+        );
+
+        gridManager.SetCellOccupant(currentGridPos, building);
+    }
+
+    private void TryDestroy()
+    {
+        GameObject occupant = gridManager.GetCellOccupant(currentGridPos);
+        if (occupant == null)
+            return;
+
+        Buildable buildable = occupant.GetComponent<Buildable>();
+        if (buildable == null || !buildable.CanBeDestroyed)
+            return;
+
+        goldManager.Add(buildable.GetRefundValue());
+        Destroy(occupant);
+        gridManager.SetCellOccupant(currentGridPos, null);
+    }
+
 
     private void ChangeBuilding(int direction)
     {
@@ -152,58 +157,8 @@ public class BuildPreviewController : MonoBehaviour
             selectedIndex = 0;
 
         hudController.UpdateBuilding(
-            CurrentBuildingData.buildingName,
-            CurrentBuildingData.buildCost
+            CurrentBuilding.buildingName,
+            CurrentBuilding.buildCost
         );
     }
-
-    // ================= ACTIONS =================
-
-    private void TryBuild()
-    {
-        if (!canBuild)
-            return;
-
-        if (!gridManager.CanBlockCell(currentGridPos))
-            return;
-
-        if (!goldManager.Spend(CurrentBuildingData.buildCost))
-            return;
-
-        GameObject building = Instantiate(
-            CurrentBuildingData.prefab,
-            GetCellCenter(currentGridPos),
-            Quaternion.identity
-        );
-
-        gridManager.SetCellOccupant(
-            currentGridPos.x,
-            currentGridPos.y,
-            building
-        );
-    }
-
-    private void TryDestroy()
-    {
-        GameObject occupant = gridManager.GetCellOccupant(
-            currentGridPos.x,
-            currentGridPos.y
-        );
-
-        if (occupant == null)
-            return;
-
-        Buildable buildable = occupant.GetComponent<Buildable>();
-        if (buildable == null)
-            return;
-
-        if (!buildable.CanBeDestroyed)
-            return;
-
-        goldManager.Add(buildable.GetRefundValue());
-
-        Destroy(occupant);
-        gridManager.SetCellOccupant(currentGridPos.x, currentGridPos.y, null);
-    }
-
 }

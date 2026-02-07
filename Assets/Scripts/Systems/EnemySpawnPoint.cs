@@ -4,77 +4,71 @@ using System.Collections.Generic;
 public class EnemySpawnPoint : MonoBehaviour
 {
     [System.Serializable]
-    public class SpawnOption
+    public class WeightedEnemy
     {
         public Enemy enemyPrefab;
-        [Min(0f)] public float weight = 1f;
+        public int weight = 1;
     }
 
-    [Header("Spawn Options")]
-    [SerializeField] private List<SpawnOption> spawnOptions = new();
+    [Header("Enemy Pool")]
+    [SerializeField] private WeightedEnemy[] enemies;
 
     private GridManager gridManager;
-    private Nexus nexus;
+    private List<Vector2Int> path;
 
-    public void Initialize(Nexus nexus, GridManager gridManager)
+    private void Awake()
     {
-        this.nexus = nexus;
-        this.gridManager = gridManager;
-    }
+        // resolve GridManager automaticamente
+        gridManager = FindFirstObjectByType<GridManager>();
 
+        if (gridManager == null)
+        {
+            Debug.LogError("EnemySpawnPoint: GridManager não encontrado.");
+            return;
+        }
+
+        path = gridManager.BuildPath();
+    }
 
     public Enemy SpawnEnemy()
     {
-        if (spawnOptions.Count == 0)
+        if (enemies == null || enemies.Length == 0)
         {
-            Debug.LogWarning("EnemySpawnPoint sem opções de spawn.");
+            Debug.LogError("EnemySpawnPoint: Nenhum inimigo configurado.");
             return null;
         }
 
-        Enemy enemyPrefab = PickEnemyByWeight();
-        if (enemyPrefab == null)
-            return null;
-
-        Enemy enemy = Instantiate(enemyPrefab, transform.position, Quaternion.identity);
-
-        enemy.Initialize(
-            gridManager,
-            gridManager.GetGridCenterCell()
+        Enemy prefab = PickWeightedEnemy();
+        Enemy enemy = Instantiate(
+            prefab,
+            transform.position,
+            Quaternion.identity
         );
 
+        enemy.Initialize(path, gridManager);
         return enemy;
     }
 
-    // ================= WEIGHTED RANDOM =================
+    // ===================== WEIGHTED PICK =====================
 
-    private Enemy PickEnemyByWeight()
+    private Enemy PickWeightedEnemy()
     {
-        float totalWeight = 0f;
+        int totalWeight = 0;
 
-        foreach (var option in spawnOptions)
+        foreach (var entry in enemies)
+            totalWeight += entry.weight;
+
+        int random = Random.Range(0, totalWeight);
+        int current = 0;
+
+        foreach (var entry in enemies)
         {
-            if (option.enemyPrefab != null && option.weight > 0f)
-                totalWeight += option.weight;
+            current += entry.weight;
+            if (random < current)
+                return entry.enemyPrefab;
         }
 
-        if (totalWeight <= 0f)
-            return null;
-
-        float random = Random.Range(0f, totalWeight);
-        float current = 0f;
-
-        foreach (var option in spawnOptions)
-        {
-            if (option.enemyPrefab == null || option.weight <= 0f)
-                continue;
-
-            current += option.weight;
-
-            if (random <= current)
-                return option.enemyPrefab;
-        }
-
-        // fallback (não deveria acontecer)
-        return spawnOptions[0].enemyPrefab;
+        // fallback (não deve acontecer)
+        return enemies[0].enemyPrefab;
     }
 }

@@ -10,6 +10,8 @@ public class DefenseTower : MonoBehaviour
     [SerializeField] private Projectile projectilePrefab;
     [SerializeField] private Transform firePoint;
 
+    [Header("Rotation")]
+    [SerializeField] private Transform rotatingPart;
     private float cooldownTimer;
     private readonly List<Enemy> enemiesInRange = new();
 
@@ -23,16 +25,20 @@ public class DefenseTower : MonoBehaviour
     {
         cooldownTimer -= Time.deltaTime;
 
-        if (cooldownTimer <= 0f)
+        Enemy target = SelectTarget();
+
+        if (target != null)
         {
-            Enemy target = SelectTarget();
-            if (target != null)
+            RotateTowards(target);
+
+            if (cooldownTimer <= 0f)
             {
                 Shoot(target);
                 cooldownTimer = data.attackCooldown;
             }
         }
     }
+
 
     private void Shoot(Enemy target)
     {
@@ -92,4 +98,24 @@ public class DefenseTower : MonoBehaviour
         if (enemy != null)
             enemiesInRange.Remove(enemy);
     }
+
+    // ================= ANIMATION =================
+
+    private void RotateTowards(Enemy target)
+    {
+        if (rotatingPart == null || target == null)
+            return;
+
+        Vector3 direction = target.transform.position - rotatingPart.position;
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        rotatingPart.rotation = Quaternion.Lerp(
+            rotatingPart.rotation,
+            Quaternion.Euler(0f, 0f, angle - 90f),
+            Time.deltaTime * 10f
+        );
+
+    }
+
 }
