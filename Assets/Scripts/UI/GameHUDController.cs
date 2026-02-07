@@ -17,7 +17,8 @@ public class GameHUDController : MonoBehaviour
 
     [Header("Pause")]
     [SerializeField] private GameObject pauseOverlay;
-
+    [Header("GameOver")]
+    [SerializeField] private GameObject gameOverOverlay;
     [Header("Speed")]
     [SerializeField] private TextMeshProUGUI speedText;
 
@@ -127,6 +128,7 @@ public class GameHUDController : MonoBehaviour
     private void HandleNexusDestroyed()
     {
         UILogger.Log("HUD recebeu evento: Nexus destruído");
+        HandleGameOver(true);
         // futuramente: tela de Game Over
     }
 
@@ -134,6 +136,11 @@ public class GameHUDController : MonoBehaviour
     {
         if (pauseOverlay != null)
             pauseOverlay.SetActive(isPaused);
+    }
+    private void HandleGameOver(bool isGameOver)
+    {
+        if (gameOverOverlay != null)
+            gameOverOverlay.SetActive(isGameOver);
     }
 
     private void HandleSpeed(float speed)

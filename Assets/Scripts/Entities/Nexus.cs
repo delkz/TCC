@@ -49,10 +49,9 @@ public class Nexus : MonoBehaviour
 
     private void Explode()
     {
-        Debug.Log("Nexus destru�do! Reiniciando cena...");
         OnNexusDestroyed?.Invoke();
 
         // Reinicia a cena atual
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        // SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
