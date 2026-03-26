@@ -1,32 +1,54 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.UIElements;
 
 public class GameHUDController : MonoBehaviour
 {
-    [Header("Build Info")]
-    [SerializeField] private TextMeshProUGUI modeText;
-    [SerializeField] private TextMeshProUGUI buildingText;
+    [SerializeField] private UIDocument uiDocument;
+
+    // UI Elements
+    private Label modeText;
+    private Label buildingText;
+    private Label moneyText;
+    private Label nexusLifeText;
+    private Label speedText;
+
+    private Label waveText;
+
+    private VisualElement pauseOverlay;
+    private VisualElement gameOverOverlay;
 
     [Header("Economy")]
-    [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private GoldManager goldManager;
 
     [Header("Nexus")]
     [SerializeField] private Nexus nexus;
-    [SerializeField] private TextMeshProUGUI nexusLifeText;
+    [Header("Wave Manager")]
+    [SerializeField] private WaveManager waveManager;
 
-    [Header("Pause")]
-    [SerializeField] private GameObject pauseOverlay;
-    [Header("GameOver")]
-    [SerializeField] private GameObject gameOverOverlay;
-    [Header("Speed")]
-    [SerializeField] private TextMeshProUGUI speedText;
+    private void Awake()
+    {
+        uiDocument = GetComponent<UIDocument>();
+        var root = uiDocument.rootVisualElement;
+
+        modeText = root.Q<Label>("ModeText");
+        buildingText = root.Q<Label>("BuildingText");
+
+        moneyText = root.Q<Label>("GoldLabel");
+        nexusLifeText = root.Q<Label>("HealthLabel");
+
+        speedText = root.Q<Label>("SpeedText");
+        waveText = root.Q<Label>("WaveLabel");
+
+        pauseOverlay = root.Q<VisualElement>("PauseOverlay");
+        gameOverOverlay = root.Q<VisualElement>("GameOverOverlay");
+    }
 
     private void Start()
     {
         BindGold();
         BindNexus();
         BindGameManager();
+        BindWave();
     }
 
     private void OnDestroy()
@@ -34,6 +56,7 @@ public class GameHUDController : MonoBehaviour
         UnbindGold();
         UnbindNexus();
         UnbindGameManager();
+        UnbindWave();
     }
 
     // =======================
@@ -54,6 +77,20 @@ public class GameHUDController : MonoBehaviour
         goldManager.OnGoldChanged -= UpdateMoney;
     }
 
+    private void BindWave()
+    {
+        if (waveManager == null) return;
+
+        waveManager.waveStarted += HandleWaveStarted;
+
+        UpdateWave(waveManager.currentWave);
+    }
+    private void UnbindWave()
+    {
+        if (waveManager == null) return;
+
+        waveManager.waveStarted -= HandleWaveStarted;
+    }
     private void BindNexus()
     {
         if (nexus == null)
@@ -82,7 +119,6 @@ public class GameHUDController : MonoBehaviour
         GameManager.Instance.OnPauseChanged += HandlePause;
         GameManager.Instance.OnSpeedChanged += HandleSpeed;
 
-        // estado inicial
         HandleSpeed(GameManager.Instance.GetGameSpeed());
     }
 
@@ -110,37 +146,47 @@ public class GameHUDController : MonoBehaviour
             buildingText.text = $"Building: {buildingName} (Cost: {cost})";
     }
 
+    private void UpdateWave(int wave)
+    {
+        if (waveText != null)
+            waveText.text = $"{wave}";
+    }
+
     // =======================
     // Event Handlers
     // =======================
 
     private void UpdateMoney(int money)
     {
-        moneyText.text = $"${money}";
+        if (moneyText != null)
+            moneyText.text = $"${money}";
     }
 
     private void UpdateNexusHealth(int health)
     {
         if (nexusLifeText != null)
-            nexusLifeText.text = $"Nexus HP: {health}";
+            nexusLifeText.text = $"{health}";
     }
 
     private void HandleNexusDestroyed()
     {
         UILogger.Log("HUD recebeu evento: Nexus destruído");
         HandleGameOver(true);
-        // futuramente: tela de Game Over
     }
-
+    private void HandleWaveStarted(int wave)
+    {
+        UpdateWave(wave);
+    }
     private void HandlePause(bool isPaused)
     {
         if (pauseOverlay != null)
-            pauseOverlay.SetActive(isPaused);
+            pauseOverlay.style.display = isPaused ? DisplayStyle.Flex : DisplayStyle.None;
     }
+
     private void HandleGameOver(bool isGameOver)
     {
         if (gameOverOverlay != null)
-            gameOverOverlay.SetActive(isGameOver);
+            gameOverOverlay.style.display = isGameOver ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
     private void HandleSpeed(float speed)

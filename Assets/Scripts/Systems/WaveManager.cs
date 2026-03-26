@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class WaveManager : MonoBehaviour
 {
@@ -15,13 +16,15 @@ public class WaveManager : MonoBehaviour
     [Header("Timing Balance")]
     [SerializeField] private float initialWaveDelay = 10f;
     [SerializeField] private float timePerEnemy = 10f;
-    private int currentWave = 0;
+    public int currentWave = 0;
     private bool waveInProgress;
     private float waveTimer;
     private float maxWaveDuration;
     private readonly List<Enemy> aliveEnemies = new();
     private int enemiesRemaining;
     [SerializeField] private Nexus nexus;
+
+    public event Action<int> waveStarted;
 
     private void Start()
     {
@@ -47,7 +50,7 @@ public class WaveManager : MonoBehaviour
     private void StartNextWave()
     {
         currentWave++;
-
+        waveStarted?.Invoke(currentWave);
         enemiesRemaining = Mathf.RoundToInt(
             startingEnemies * Mathf.Pow(1.25f, currentWave - 1)
         );
