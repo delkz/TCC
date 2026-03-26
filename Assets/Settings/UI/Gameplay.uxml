@@ -1,5 +1,5 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/Settings/UI/Styles.uss?fileID=7433441132597879392&amp;guid=8d3acdc9d2b8edd4f8871f824604fb41&amp;type=3#Styles"/>
+    <Style src="project://database/Assets/Settings/UI/Styles.uss?fileID=7433441132597879392&amp;guid=8d3acdc9d2b8edd4f8871f824604fb41&amp;type=3"/>
     <ui:VisualElement name="HUDRoot" style="flex-grow: 1;">
         <ui:VisualElement name="TopBar" class="TopBar" style="height: 75px; position: absolute; top: 0; left: 0; right: 0; padding: 12px; flex-direction: row; align-items: center;">
             <ui:VisualElement name="LifeInfo" class="icon-with-text">
@@ -14,6 +14,10 @@
                 <ui:Image class="icon-with-text--image" style="background-image: url(&quot;project://database/Assets/Art/icons.png?fileID=-189380465&amp;guid=9d90347312962ca45bb0356032601c41&amp;type=3#wave&quot;);"/>
                 <ui:Label name="WaveLabel" text="1" class="icon-with-text--label"/>
             </ui:VisualElement>
+            <ui:VisualElement name="ScoreInfo" class="icon-with-text">
+                <ui:Image class="icon-with-text--image" style="background-image: url(&quot;project://database/Assets/Art/icons.png?fileID=2077882801&amp;guid=9d90347312962ca45bb0356032601c41&amp;type=3#icons_9&quot;);"/>
+                <ui:Label name="ScoreLabel" text="1" class="icon-with-text--label"/>
+            </ui:VisualElement>
             <ui:VisualElement name="SpeedInfo" class="icon-with-text">
                 <ui:Label name="SpeedText" text="1x" class="icon-with-text--label"/>
             </ui:VisualElement>
@@ -27,6 +31,9 @@
         </ui:VisualElement>
         <ui:VisualElement name="GameOverOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; display: none;">
             <ui:Label text="GAME OVER"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="LevelCompletedOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; display: none;">
+            <ui:Label text="LEVEL COMPLETED"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

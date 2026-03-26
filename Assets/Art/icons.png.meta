@@ -147,10 +147,10 @@ TextureImporter:
       name: icons_9
       rect:
         serializedVersion: 2
-        x: 1240
-        y: 622
-        width: 294
-        height: 190
+        x: 1291
+        y: 634
+        width: 158
+        height: 158
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -411,8 +411,8 @@ TextureImporter:
       name: icons_5
       rect:
         serializedVersion: 2
-        x: 0
-        y: 622
+        x: 33
+        y: 614
         width: 294
         height: 190
       alignment: 0

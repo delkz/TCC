@@ -4,6 +4,15 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    [Serializable]
+    private class CellPrefabBinding
+    {
+        public CellType type;
+        public GameObject prefab;
+        public bool occupyCell = true;
+        public bool parentToGrid = false;
+    }
+
     public event Action OnGridChanged;
 
     [Header("References")]
@@ -11,12 +20,22 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject gridTilePrefab;
     [SerializeField] private GameObject nexusPrefab;
     [SerializeField] private GameObject enemySpawnPrefab;
-    private GridMapAsset mapAsset;
+
+    [Header("Cell Type Prefabs")]
+    [SerializeField] private List<CellPrefabBinding> cellPrefabBindings = new();
 
     [Header("Grid Settings")]
     [SerializeField] private float cellSize = 1f;
 
-    // ===================== STATE =====================
+    private static readonly Vector2Int[] CardinalDirections =
+    {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
+
+    private GridMapAsset mapAsset;
 
     private int width;
     private int height;
@@ -24,53 +43,87 @@ public class GridManager : MonoBehaviour
     private GridCell[,] grid;
     private GameObject[,] groundLayer;
     private GameObject[,] pathLayer;
-    private GameObject[,] blockedLayer;
+    private GameObject[,] contentLayer;
 
     private Vector2Int spawnCell;
     private Vector2Int goalCell;
-
-    // ===================== UNITY =====================
+    private Vector2 lastScreenSize;
 
     private void Awake()
     {
-        if (GameSession.Instance == null || GameSession.Instance.SelectedLevel == null)
+        if (!TryGetSelectedMap(out GridMapAsset selectedMap))
         {
-            Debug.LogWarning("Gameplay iniciada sem LevelData (modo debug).");
             return;
         }
 
-
-        LevelData level = GameSession.Instance.SelectedLevel;
-
-        if (level == null || level.map == null)
-        {
-            Debug.LogError("GridManager: LevelData ou mapa não definido.");
-            return;
-        }
-
-        mapAsset = level.map;
-        LoadMap(level.map);
+        LoadMap(selectedMap);
     }
 
-    // ===================== MAP LOADING =====================
+    private void Update()
+    {
+        if (ScreenSizeChanged())
+        {
+            CenterCamera();
+        }
+    }
 
     public void LoadMap(GridMapAsset map)
     {
-        if (map == null)
+        if (!ValidateMap(map))
         {
-            Debug.LogError("GridManager: MapAsset não atribuído.");
             return;
         }
 
+        InitializeMapState(map);
+        BuildMapRuntime();
+    }
+
+    private bool ValidateMap(GridMapAsset map)
+    {
+        if (map != null)
+        {
+            return true;
+        }
+
+        Debug.LogError("GridManager: MapAsset não atribuído.");
+        return false;
+    }
+
+    private void InitializeMapState(GridMapAsset map)
+    {
+        mapAsset = map;
         width = map.width;
         height = map.height;
+    }
 
-        CreateGridFromMap(map);
+    private void BuildMapRuntime()
+    {
+        CreateGridFromMap(mapAsset);
         GenerateGridVisual();
         SpawnMapEntities();
         CenterCamera();
-
         DebugPath();
+    }
+
+    private bool TryGetSelectedMap(out GridMapAsset selectedMap)
+    {
+        selectedMap = null;
+
+        if (GameSession.Instance == null || GameSession.Instance.SelectedLevel == null)
+        {
+            Debug.LogWarning("Gameplay iniciada sem LevelData (modo debug).");
+            return false;
+        }
+
+        LevelData level = GameSession.Instance.SelectedLevel;
+        if (level == null || level.map == null)
+        {
+            Debug.LogError("GridManager: LevelData ou mapa não definido.");
+            return false;
+        }
+
+        selectedMap = level.map;
+        return true;
     }
 
     private void CreateGridFromMap(GridMapAsset map)
@@ -83,104 +136,84 @@ public class GridManager : MonoBehaviour
             {
                 CellType type = map.GetCell(x, y);
                 grid[x, y] = new GridCell(x, y, type);
-
-                if (type == CellType.Spawn)
-                    spawnCell = new Vector2Int(x, y);
-
-                if (type == CellType.Goal)
-                    goalCell = new Vector2Int(x, y);
+                RegisterSpecialCell(type, x, y);
             }
         }
     }
 
-    // ===================== VISUAL GRID =====================
+    private void RegisterSpecialCell(CellType type, int x, int y)
+    {
+        if (type == CellType.Spawn)
+        {
+            spawnCell = new Vector2Int(x, y);
+        }
+
+        if (type == CellType.Goal)
+        {
+            goalCell = new Vector2Int(x, y);
+        }
+    }
 
     private void GenerateGridVisual()
     {
         groundLayer = new GameObject[width, height];
         pathLayer = new GameObject[width, height];
-        blockedLayer = new GameObject[width, height];
+        contentLayer = new GameObject[width, height];
 
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                GridCell cell = grid[x, y];
-
-                Vector3 pos = GridToWorldCenter(new Vector2Int(x, y));
-
-                // =====================
-                // GROUND LAYER
-                // =====================
-
-                GameObject ground = CreateTile(
-                    pos,
-                    mapAsset.theme.emptySprite,
-                    "Ground",
-                    0
-                );
-
-                groundLayer[x, y] = ground;
-
-                // =====================
-                // PATH LAYER
-                // =====================
-
-                if (cell.type == CellType.Path)
-                {
-                    GameObject path = CreateTile(
-                        pos,
-                        GetPathSprite(x, y),
-                        "Path",
-                        1
-                    );
-
-                    pathLayer[x, y] = path;
-                }
-
-                // =====================
-                // BLOCKED LAYER
-                // =====================
-
-                if (cell.type == CellType.Blocked)
-                {
-                    GameObject blocked = CreateTile(
-                        pos,
-                        mapAsset.theme.blockedSprite,
-                        "Blocked",
-                        2
-                    );
-
-                    blockedLayer[x, y] = blocked;
-                }
-
-                // =====================
-                // SPAWN / GOAL
-                // =====================
-
-                if (cell.type == CellType.Spawn)
-                {
-                    CreateTile(
-                        pos,
-                        mapAsset.theme.spawnSprite,
-                        "Spawn",
-                        3
-                    );
-                }
-
-                if (cell.type == CellType.Goal)
-                {
-                    CreateTile(
-                        pos,
-                        mapAsset.theme.goalSprite,
-                        "Goal",
-                        3
-                    );
-                }
+                CreateCellVisual(x, y);
             }
         }
     }
 
+    private void CreateCellVisual(int x, int y)
+    {
+        GridCell cell = grid[x, y];
+        Vector3 worldPosition = GridToWorldCenter(new Vector2Int(x, y));
+
+        CreateGroundVisual(x, y, worldPosition);
+        CreatePathVisualIfNeeded(cell, x, y, worldPosition);
+        CreateCellContentVisualIfNeeded(cell, x, y, worldPosition);
+    }
+
+    private void CreateGroundVisual(int x, int y, Vector3 worldPosition)
+    {
+        groundLayer[x, y] = CreateTile(worldPosition, mapAsset.theme.emptySprite, "Ground", 0);
+    }
+
+    private void CreatePathVisualIfNeeded(GridCell cell, int x, int y, Vector3 worldPosition)
+    {
+        if (cell.type != CellType.Path)
+        {
+            return;
+        }
+
+        pathLayer[x, y] = CreateTile(worldPosition, GetPathSprite(x, y), "Path", 1);
+    }
+
+    private void CreateCellContentVisualIfNeeded(GridCell cell, int x, int y, Vector3 worldPosition)
+    {
+        if (cell.type == CellType.Empty || cell.type == CellType.Path)
+        {
+            return;
+        }
+
+        if (mapAsset.theme == null)
+        {
+            return;
+        }
+
+        if (!mapAsset.theme.TryGetSprite(cell.type, out Sprite sprite, out int sortingOrder))
+        {
+            return;
+        }
+
+        string tileName = cell.type.ToString();
+        contentLayer[x, y] = CreateTile(worldPosition, sprite, tileName, sortingOrder);
+    }
 
     private void ApplyTheme(SpriteRenderer sr, CellType type, int x, int y)
     {
@@ -192,62 +225,127 @@ public class GridManager : MonoBehaviour
             return;
         }
 
-        Sprite sprite = type switch
+        Sprite sprite = type == CellType.Path
+            ? GetPathSprite(x, y)
+            : null;
+
+        if (sprite == null)
         {
-            CellType.Path => GetPathSprite(x, y),
-            CellType.Spawn => theme.spawnSprite,
-            CellType.Goal => theme.goalSprite,
-            CellType.Blocked => theme.blockedSprite,
-            _ => theme.emptySprite
-        };
+            theme.TryGetSprite(type, out sprite, out _);
+        }
+
+        if (sprite == null)
+        {
+            sprite = theme.emptySprite;
+        }
 
         sr.sprite = sprite;
     }
-
-
-    // ===================== MAP ENTITIES =====================
 
     private void SpawnMapEntities()
     {
         SpawnEnemySpawnPoint();
         SpawnNexus();
+        SpawnBoundCellPrefabs();
     }
 
     private void SpawnEnemySpawnPoint()
     {
-        GameObject spawnGO = Instantiate(
-            enemySpawnPrefab,
-            GridToWorldCenter(spawnCell),
-            Quaternion.identity
-        );
-
-        GridObject gridObject = spawnGO.GetComponent<GridObject>();
-        if (gridObject != null)
-        {
-            gridObject.AlignToGrid(cellSize);
-        }
-
-        SetCellOccupant(spawnCell, spawnGO);
+        SpawnEntityAtCell(enemySpawnPrefab, spawnCell, true);
     }
 
     private void SpawnNexus()
     {
-        GameObject nexus = Instantiate(
-            nexusPrefab,
-            GridToWorldCenter(goalCell),
-            Quaternion.identity
-        );
+        SpawnEntityAtCell(nexusPrefab, goalCell, true);
+    }
 
-        GridObject gridObject = nexus.GetComponent<GridObject>();
-        if (gridObject != null)
+    private void SpawnEntityAtCell(GameObject prefab, Vector2Int cellPosition, bool setAsOccupant)
+    {
+        if (prefab == null)
+        {
+            Debug.LogWarning("GridManager: prefab de entidade não atribuído.");
+            return;
+        }
+
+        GameObject entity = Instantiate(prefab, GridToWorldCenter(cellPosition), Quaternion.identity);
+
+        if (entity.TryGetComponent(out GridObject gridObject))
         {
             gridObject.AlignToGrid(cellSize);
         }
 
-        SetCellOccupant(goalCell, nexus);
+        if (setAsOccupant)
+        {
+            SetCellOccupant(cellPosition, entity);
+        }
     }
 
-    // ===================== GRID API =====================
+    private void SpawnBoundCellPrefabs()
+    {
+        if (cellPrefabBindings == null || cellPrefabBindings.Count == 0)
+        {
+            return;
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Vector2Int cellPosition = new Vector2Int(x, y);
+                CellType type = grid[x, y].type;
+
+                if (!TryGetCellPrefabBinding(type, out CellPrefabBinding binding))
+                {
+                    continue;
+                }
+
+                SpawnBoundPrefab(binding, cellPosition);
+            }
+        }
+    }
+
+    private bool TryGetCellPrefabBinding(CellType type, out CellPrefabBinding binding)
+    {
+        for (int i = 0; i < cellPrefabBindings.Count; i++)
+        {
+            CellPrefabBinding candidate = cellPrefabBindings[i];
+            if (candidate != null && candidate.type == type && candidate.prefab != null)
+            {
+                binding = candidate;
+                return true;
+            }
+        }
+
+        binding = null;
+        return false;
+    }
+
+    private void SpawnBoundPrefab(CellPrefabBinding binding, Vector2Int cellPosition)
+    {
+        GameObject entity;
+        Vector3 worldPosition = GridToWorldCenter(cellPosition);
+
+        if (binding.parentToGrid)
+        {
+            entity = Instantiate(binding.prefab, worldPosition, Quaternion.identity, transform);
+        }
+        else
+        {
+            entity = Instantiate(binding.prefab, worldPosition, Quaternion.identity);
+        }
+
+        entity.name = $"{binding.type}_{cellPosition.x}_{cellPosition.y}";
+
+        if (entity.TryGetComponent(out GridObject gridObject))
+        {
+            gridObject.AlignToGrid(cellSize);
+        }
+
+        if (binding.occupyCell)
+        {
+            SetCellOccupant(cellPosition, entity);
+        }
+    }
 
     public bool IsValidCell(int x, int y)
     {
@@ -257,7 +355,9 @@ public class GridManager : MonoBehaviour
     public bool IsCellBuildable(int x, int y)
     {
         if (!IsValidCell(x, y))
+        {
             return false;
+        }
 
         GridCell cell = grid[x, y];
         return !cell.IsOccupied && cell.isBuildable;
@@ -266,7 +366,9 @@ public class GridManager : MonoBehaviour
     public void SetCellOccupant(Vector2Int pos, GameObject occupant)
     {
         if (!IsValidCell(pos.x, pos.y))
+        {
             return;
+        }
 
         grid[pos.x, pos.y].occupant = occupant;
         OnGridChanged?.Invoke();
@@ -275,112 +377,138 @@ public class GridManager : MonoBehaviour
     public GameObject GetCellOccupant(Vector2Int pos)
     {
         if (!IsValidCell(pos.x, pos.y))
+        {
             return null;
+        }
 
         return grid[pos.x, pos.y].occupant;
     }
+
     private bool IsPath(int x, int y)
     {
         if (!IsValidCell(x, y))
+        {
             return false;
+        }
 
         return grid[x, y].IsPath || grid[x, y].IsGoal || grid[x, y].IsSpawn;
     }
+
     private GameObject CreateTile(Vector3 pos, Sprite sprite, string name, int sortingOrder)
     {
-        GameObject tile = Instantiate(
-            gridTilePrefab,
-            pos,
-            Quaternion.identity,
-            transform
-        );
-
+        GameObject tile = Instantiate(gridTilePrefab, pos, Quaternion.identity, transform);
         tile.name = $"{name}_{pos.x}_{pos.y}";
 
-        GridObject gridObject = tile.GetComponent<GridObject>();
-        if (gridObject != null)
+        if (tile.TryGetComponent(out GridObject gridObject))
+        {
             gridObject.AlignToGrid(cellSize);
+        }
 
-        SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
-        sr.sprite = sprite;
-        sr.sortingOrder = sortingOrder;
+        if (tile.TryGetComponent(out SpriteRenderer sr))
+        {
+            sr.sprite = sprite;
+            sr.sortingOrder = sortingOrder;
+        }
 
         return tile;
     }
-    // ===================== PATH (LINEAR, MAP-DEFINED) =====================
+
     private Sprite GetPathSprite(int x, int y)
     {
-        bool up = IsPath(x, y + 1);
-        bool down = IsPath(x, y - 1);
-        bool left = IsPath(x - 1, y);
-        bool right = IsPath(x + 1, y);
+        PathNeighbors neighbors = GetPathNeighbors(x, y);
+        int connections = CountConnections(neighbors);
+        return ResolvePathSprite(connections, neighbors);
+    }
 
-        int connections =
-            (up ? 1 : 0) +
-            (down ? 1 : 0) +
-            (left ? 1 : 0) +
-            (right ? 1 : 0);
+    private PathNeighbors GetPathNeighbors(int x, int y)
+    {
+        return new PathNeighbors(
+            IsPath(x, y + 1),
+            IsPath(x, y - 1),
+            IsPath(x - 1, y),
+            IsPath(x + 1, y)
+        );
+    }
 
+    private int CountConnections(PathNeighbors neighbors)
+    {
+        return
+            (neighbors.Up ? 1 : 0) +
+            (neighbors.Down ? 1 : 0) +
+            (neighbors.Left ? 1 : 0) +
+            (neighbors.Right ? 1 : 0);
+    }
+
+    private Sprite ResolvePathSprite(int connections, PathNeighbors neighbors)
+    {
         GridTheme theme = mapAsset.theme;
 
         return connections switch
         {
             4 => theme.pathCross,
             3 => theme.pathT,
-            2 when (up && down) || (left && right) => theme.pathStraight,
+            2 when (neighbors.Up && neighbors.Down) || (neighbors.Left && neighbors.Right) => theme.pathStraight,
             2 => theme.pathCorner,
             _ => theme.pathEnd
         };
     }
+
     public List<Vector2Int> BuildPath()
     {
         List<Vector2Int> path = new();
         HashSet<Vector2Int> visited = new();
 
         Vector2Int current = spawnCell;
-        path.Add(current);
-        visited.Add(current);
+        RegisterPathStep(path, visited, current);
 
         while (current != goalCell)
         {
             Vector2Int next = GetNextPathCell(current, visited);
 
-            if (next == current)
+            if (PathTraversalStuck(current, next))
             {
                 Debug.LogError("GridManager: Caminho inválido no mapa.");
                 break;
             }
 
             current = next;
-            path.Add(current);
-            visited.Add(current);
+            RegisterPathStep(path, visited, current);
         }
 
         return path;
     }
 
+    private void RegisterPathStep(List<Vector2Int> path, HashSet<Vector2Int> visited, Vector2Int cell)
+    {
+        path.Add(cell);
+        visited.Add(cell);
+    }
+
+    private bool PathTraversalStuck(Vector2Int current, Vector2Int next)
+    {
+        return next == current;
+    }
+
     private Vector2Int GetNextPathCell(Vector2Int current, HashSet<Vector2Int> visited)
     {
-        Vector2Int[] dirs =
+        foreach (Vector2Int direction in CardinalDirections)
         {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right
-        };
-
-        foreach (var dir in dirs)
-        {
-            Vector2Int next = current + dir;
+            Vector2Int next = current + direction;
 
             if (!IsValidCell(next.x, next.y))
+            {
                 continue;
+            }
 
             if (visited.Contains(next))
+            {
                 continue;
+            }
 
             if (grid[next.x, next.y].IsPath || grid[next.x, next.y].IsGoal)
+            {
                 return next;
+            }
         }
 
         return current;
@@ -388,11 +516,11 @@ public class GridManager : MonoBehaviour
 
     private void DebugPath()
     {
-        foreach (var cell in BuildPath())
+        foreach (Vector2Int cell in BuildPath())
+        {
             Debug.Log($"Path cell: {cell}");
+        }
     }
-
-    // ===================== COORDINATES =====================
 
     public Vector2Int WorldToGridPosition(Vector3 worldPosition)
     {
@@ -410,55 +538,78 @@ public class GridManager : MonoBehaviour
         );
     }
 
-    // ===================== CAMERA =====================
-
     private void CenterCamera()
     {
         if (mainCamera == null)
+        {
             return;
+        }
 
-        float worldWidth = width * cellSize;
-        float worldHeight = height * cellSize;
+        Vector2 worldSize = GetWorldSize();
+        CenterCameraPosition(worldSize);
+        AdjustCameraZoom(worldSize);
+    }
 
-        // Centralizar
-        mainCamera.transform.position = new Vector3(
-            worldWidth / 2f,
-            worldHeight / 2f,
-            -10f
-        );
+    private Vector2 GetWorldSize()
+    {
+        return new Vector2(width * cellSize, height * cellSize);
+    }
 
-        // Ajustar zoom para caber toda grid
+    private void CenterCameraPosition(Vector2 worldSize)
+    {
+        mainCamera.transform.position = new Vector3(worldSize.x / 2f, worldSize.y / 2f, -10f);
+    }
+
+    private void AdjustCameraZoom(Vector2 worldSize)
+    {
         float screenRatio = (float)Screen.width / Screen.height;
-        float targetRatio = worldWidth / worldHeight;
+        float targetRatio = worldSize.x / worldSize.y;
 
         if (screenRatio >= targetRatio)
         {
-            mainCamera.orthographicSize = worldHeight / 2f;
+            mainCamera.orthographicSize = worldSize.y / 2f;
+            return;
         }
-        else
-        {
-            float difference = targetRatio / screenRatio;
-            mainCamera.orthographicSize = worldHeight / 2f * difference;
-        }
-    }
-    private void Update()
-    {
-        if (ScreenSizeChanged())
-        {
-            CenterCamera();
-        }
-    }
 
-    private Vector2 lastScreenSize;
+        float difference = targetRatio / screenRatio;
+        mainCamera.orthographicSize = worldSize.y / 2f * difference;
+    }
 
     private bool ScreenSizeChanged()
     {
-        if (lastScreenSize.x != Screen.width || lastScreenSize.y != Screen.height)
+        Vector2 currentScreenSize = GetCurrentScreenSize();
+        if (!HasScreenSizeChanged(currentScreenSize))
         {
-            lastScreenSize = new Vector2(Screen.width, Screen.height);
-            return true;
+            return false;
         }
 
-        return false;
+        lastScreenSize = currentScreenSize;
+        return true;
+    }
+
+    private Vector2 GetCurrentScreenSize()
+    {
+        return new Vector2(Screen.width, Screen.height);
+    }
+
+    private bool HasScreenSizeChanged(Vector2 currentScreenSize)
+    {
+        return lastScreenSize.x != currentScreenSize.x || lastScreenSize.y != currentScreenSize.y;
+    }
+
+    private readonly struct PathNeighbors
+    {
+        public readonly bool Up;
+        public readonly bool Down;
+        public readonly bool Left;
+        public readonly bool Right;
+
+        public PathNeighbors(bool up, bool down, bool left, bool right)
+        {
+            Up = up;
+            Down = down;
+            Left = left;
+            Right = right;
+        }
     }
 }

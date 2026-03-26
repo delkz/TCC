@@ -24,6 +24,7 @@ public class LevelData : ScriptableObject
 
     [Header("Win / Lose")]
     public int nexusHealth = 10;
+    public int scoreTarget = 50;
 
     [Header("Unlock Rules")]
     [Tooltip("IDs de níveis que precisam ser concluídos antes")]

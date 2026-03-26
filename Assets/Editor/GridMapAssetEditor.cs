@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 
 [CustomEditor(typeof(GridMapAsset))]
 public class GridMapAssetEditor : Editor
@@ -8,6 +9,8 @@ public class GridMapAssetEditor : Editor
 
     private CellType activePaintType = CellType.Path;
     private bool isPainting;
+    private CellType[] paintTypes;
+    private GUIContent[] paintTypeLabels;
 
     private const float CELL_WIDTH = 60f;
     private const float CELL_HEIGHT = 25f;
@@ -15,6 +18,26 @@ public class GridMapAssetEditor : Editor
     private void OnEnable()
     {
         map = (GridMapAsset)target;
+        RefreshPaintTypes();
+    }
+
+    private void RefreshPaintTypes()
+    {
+        Array rawValues = Enum.GetValues(typeof(CellType));
+        paintTypes = new CellType[rawValues.Length];
+        paintTypeLabels = new GUIContent[rawValues.Length];
+
+        for (int i = 0; i < rawValues.Length; i++)
+        {
+            CellType type = (CellType)rawValues.GetValue(i);
+            paintTypes[i] = type;
+            paintTypeLabels[i] = new GUIContent(type.ToString());
+        }
+
+        if (Array.IndexOf(paintTypes, activePaintType) < 0 && paintTypes.Length > 0)
+        {
+            activePaintType = paintTypes[0];
+        }
     }
 
     public override void OnInspectorGUI()
@@ -68,10 +91,20 @@ public class GridMapAssetEditor : Editor
     {
         EditorGUILayout.LabelField("Paint Mode", EditorStyles.boldLabel);
 
-        activePaintType = (CellType)GUILayout.Toolbar(
-            (int)activePaintType,
-            System.Enum.GetNames(typeof(CellType))
-        );
+        if (paintTypes == null || paintTypes.Length == 0)
+        {
+            EditorGUILayout.HelpBox("Nenhum CellType disponivel para pintura.", MessageType.Warning);
+            return;
+        }
+
+        int selectedIndex = Array.IndexOf(paintTypes, activePaintType);
+        if (selectedIndex < 0)
+        {
+            selectedIndex = 0;
+        }
+
+        selectedIndex = GUILayout.Toolbar(selectedIndex, paintTypeLabels);
+        activePaintType = paintTypes[selectedIndex];
     }
 
     // =========================
@@ -128,13 +161,34 @@ public class GridMapAssetEditor : Editor
     // =========================
     private Color GetColor(CellType type)
     {
-        return type switch
+        if (map != null && map.theme != null)
         {
-            CellType.Path => new Color(0.9f, 0.8f, 0.3f),
-            CellType.Spawn => new Color(0.3f, 0.8f, 0.3f),
-            CellType.Goal => new Color(0.9f, 0.3f, 0.3f),
-            CellType.Blocked => Color.black,
-            _ => Color.gray
-        };
+            if (TryGetThemeColor(type, out Color themedColor))
+            {
+                return themedColor;
+            }
+        }
+
+        return GetGeneratedFallbackColor(type);
+    }
+
+    private bool TryGetThemeColor(CellType type, out Color color)
+    {
+        GridTheme theme = map.theme;
+
+        if (theme == null)
+        {
+            color = default;
+            return false;
+        }
+
+        return theme.TryGetColor(type, out color);
+    }
+
+    private Color GetGeneratedFallbackColor(CellType type)
+    {
+        int seed = Mathf.Abs((int)type) + 1;
+        float hue = (seed * 0.173f) % 1f;
+        return Color.HSVToRGB(hue, 0.45f, 0.85f);
     }
 }

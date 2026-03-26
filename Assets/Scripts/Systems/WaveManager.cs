@@ -11,6 +11,9 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private float timeBetweenWaves = 3f;
     [Header("Gold Settings")]
     [SerializeField] private GoldManager goldManager;
+    [Header("Score Settings")]
+    [SerializeField] private ScoreManager scoreManager;
+    [SerializeField] private int scorePerWave = 10;
     private EnemySpawnPoint spawnPoint;
     
     [Header("Timing Balance")]
@@ -88,6 +91,7 @@ public class WaveManager : MonoBehaviour
     }
     private void ForceEndWave()
     {
+        AddWaveCompletionScore();
         waveInProgress = false;
 
         // opcional: limpar lista para n�o bloquear pr�xima wave
@@ -140,9 +144,20 @@ public class WaveManager : MonoBehaviour
             return;
 
         UILogger.Log($"Wave {currentWave} finalizada com sucesso!");
+        AddWaveCompletionScore();
 
         waveInProgress = false;
         StartCoroutine(WaitForNextWave());
+    }
+
+    private void AddWaveCompletionScore()
+    {
+        if (scoreManager == null || scorePerWave <= 0)
+        {
+            return;
+        }
+
+        scoreManager.Add(scorePerWave);
     }
 
 
