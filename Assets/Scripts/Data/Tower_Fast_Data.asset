@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf305f5fa78197540a3f8475d420077b, type: 3}
   m_Name: Tower_Fast_Data
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Tower Fast
-  prefab: {fileID: 3950415348843120721, guid: e899cde4f1c3ee043be62f3235aa56ab, type: 3}
-  icon: {fileID: -3406780426092485941, guid: a2e7fe73b8f8a7a428da276abce559b6, type: 3}
+  buildingName: Archer Veteran
+  prefab: {fileID: 3950415348843120721, guid: e155089e8129d2641a511b264929d8a3, type: 3}
+  icon: {fileID: 7257567913506708742, guid: ea299bf4e13104b7baac745f77dd10c8, type: 3}
   buildCost: 15
   refundPercent: 0.66
   canBeDestroyed: 1

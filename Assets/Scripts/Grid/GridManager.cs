@@ -22,7 +22,9 @@ public class GridManager : MonoBehaviour
     private int height;
 
     private GridCell[,] grid;
-    private GameObject[,] tileVisuals;
+    private GameObject[,] groundLayer;
+    private GameObject[,] pathLayer;
+    private GameObject[,] blockedLayer;
 
     private Vector2Int spawnCell;
     private Vector2Int goalCell;
@@ -32,10 +34,10 @@ public class GridManager : MonoBehaviour
     private void Awake()
     {
         if (GameSession.Instance == null || GameSession.Instance.SelectedLevel == null)
-{
-    Debug.LogWarning("Gameplay iniciada sem LevelData (modo debug).");
-    return;
-}
+        {
+            Debug.LogWarning("Gameplay iniciada sem LevelData (modo debug).");
+            return;
+        }
 
 
         LevelData level = GameSession.Instance.SelectedLevel;
@@ -95,7 +97,9 @@ public class GridManager : MonoBehaviour
 
     private void GenerateGridVisual()
     {
-        tileVisuals = new GameObject[width, height];
+        groundLayer = new GameObject[width, height];
+        pathLayer = new GameObject[width, height];
+        blockedLayer = new GameObject[width, height];
 
         for (int y = 0; y < height; y++)
         {
@@ -103,24 +107,82 @@ public class GridManager : MonoBehaviour
             {
                 GridCell cell = grid[x, y];
 
-                GameObject tile = Instantiate(
-                    gridTilePrefab,
-                    GridToWorldCenter(new Vector2Int(x, y)),
-                    Quaternion.identity,
-                    transform
+                Vector3 pos = GridToWorldCenter(new Vector2Int(x, y));
+
+                // =====================
+                // GROUND LAYER
+                // =====================
+
+                GameObject ground = CreateTile(
+                    pos,
+                    mapAsset.theme.emptySprite,
+                    "Ground",
+                    0
                 );
 
-                tile.name = $"Tile_{x}_{y}";
+                groundLayer[x, y] = ground;
 
-                SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
-                ApplyTheme(sr, cell.type);
+                // =====================
+                // PATH LAYER
+                // =====================
 
-                tileVisuals[x, y] = tile;
+                if (cell.type == CellType.Path)
+                {
+                    GameObject path = CreateTile(
+                        pos,
+                        GetPathSprite(x, y),
+                        "Path",
+                        1
+                    );
+
+                    pathLayer[x, y] = path;
+                }
+
+                // =====================
+                // BLOCKED LAYER
+                // =====================
+
+                if (cell.type == CellType.Blocked)
+                {
+                    GameObject blocked = CreateTile(
+                        pos,
+                        mapAsset.theme.blockedSprite,
+                        "Blocked",
+                        2
+                    );
+
+                    blockedLayer[x, y] = blocked;
+                }
+
+                // =====================
+                // SPAWN / GOAL
+                // =====================
+
+                if (cell.type == CellType.Spawn)
+                {
+                    CreateTile(
+                        pos,
+                        mapAsset.theme.spawnSprite,
+                        "Spawn",
+                        3
+                    );
+                }
+
+                if (cell.type == CellType.Goal)
+                {
+                    CreateTile(
+                        pos,
+                        mapAsset.theme.goalSprite,
+                        "Goal",
+                        3
+                    );
+                }
             }
         }
     }
 
-    private void ApplyTheme(SpriteRenderer sr, CellType type)
+
+    private void ApplyTheme(SpriteRenderer sr, CellType type, int x, int y)
     {
         GridTheme theme = mapAsset.theme;
 
@@ -132,31 +194,14 @@ public class GridManager : MonoBehaviour
 
         Sprite sprite = type switch
         {
-            CellType.Path => theme.pathSprite,
+            CellType.Path => GetPathSprite(x, y),
             CellType.Spawn => theme.spawnSprite,
             CellType.Goal => theme.goalSprite,
             CellType.Blocked => theme.blockedSprite,
             _ => theme.emptySprite
         };
 
-        if (sprite != null)
-        {
-            sr.sprite = sprite;
-            sr.color = Color.white;
-        }
-        else
-        {
-            // fallback visual
-            sr.sprite = null;
-            sr.color = type switch
-            {
-                CellType.Path => theme.pathColor,
-                CellType.Spawn => theme.spawnColor,
-                CellType.Goal => theme.goalColor,
-                CellType.Blocked => theme.blockedColor,
-                _ => theme.emptyColor
-            };
-        }
+        sr.sprite = sprite;
     }
 
 
@@ -176,6 +221,12 @@ public class GridManager : MonoBehaviour
             Quaternion.identity
         );
 
+        GridObject gridObject = spawnGO.GetComponent<GridObject>();
+        if (gridObject != null)
+        {
+            gridObject.AlignToGrid(cellSize);
+        }
+
         SetCellOccupant(spawnCell, spawnGO);
     }
 
@@ -186,6 +237,12 @@ public class GridManager : MonoBehaviour
             GridToWorldCenter(goalCell),
             Quaternion.identity
         );
+
+        GridObject gridObject = nexus.GetComponent<GridObject>();
+        if (gridObject != null)
+        {
+            gridObject.AlignToGrid(cellSize);
+        }
 
         SetCellOccupant(goalCell, nexus);
     }
@@ -222,9 +279,59 @@ public class GridManager : MonoBehaviour
 
         return grid[pos.x, pos.y].occupant;
     }
+    private bool IsPath(int x, int y)
+    {
+        if (!IsValidCell(x, y))
+            return false;
 
+        return grid[x, y].IsPath || grid[x, y].IsGoal || grid[x, y].IsSpawn;
+    }
+    private GameObject CreateTile(Vector3 pos, Sprite sprite, string name, int sortingOrder)
+    {
+        GameObject tile = Instantiate(
+            gridTilePrefab,
+            pos,
+            Quaternion.identity,
+            transform
+        );
+
+        tile.name = $"{name}_{pos.x}_{pos.y}";
+
+        GridObject gridObject = tile.GetComponent<GridObject>();
+        if (gridObject != null)
+            gridObject.AlignToGrid(cellSize);
+
+        SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+        sr.sprite = sprite;
+        sr.sortingOrder = sortingOrder;
+
+        return tile;
+    }
     // ===================== PATH (LINEAR, MAP-DEFINED) =====================
+    private Sprite GetPathSprite(int x, int y)
+    {
+        bool up = IsPath(x, y + 1);
+        bool down = IsPath(x, y - 1);
+        bool left = IsPath(x - 1, y);
+        bool right = IsPath(x + 1, y);
 
+        int connections =
+            (up ? 1 : 0) +
+            (down ? 1 : 0) +
+            (left ? 1 : 0) +
+            (right ? 1 : 0);
+
+        GridTheme theme = mapAsset.theme;
+
+        return connections switch
+        {
+            4 => theme.pathCross,
+            3 => theme.pathT,
+            2 when (up && down) || (left && right) => theme.pathStraight,
+            2 => theme.pathCorner,
+            _ => theme.pathEnd
+        };
+    }
     public List<Vector2Int> BuildPath()
     {
         List<Vector2Int> path = new();
@@ -313,10 +420,45 @@ public class GridManager : MonoBehaviour
         float worldWidth = width * cellSize;
         float worldHeight = height * cellSize;
 
+        // Centralizar
         mainCamera.transform.position = new Vector3(
             worldWidth / 2f,
             worldHeight / 2f,
             -10f
         );
+
+        // Ajustar zoom para caber toda grid
+        float screenRatio = (float)Screen.width / Screen.height;
+        float targetRatio = worldWidth / worldHeight;
+
+        if (screenRatio >= targetRatio)
+        {
+            mainCamera.orthographicSize = worldHeight / 2f;
+        }
+        else
+        {
+            float difference = targetRatio / screenRatio;
+            mainCamera.orthographicSize = worldHeight / 2f * difference;
+        }
+    }
+    private void Update()
+    {
+        if (ScreenSizeChanged())
+        {
+            CenterCamera();
+        }
+    }
+
+    private Vector2 lastScreenSize;
+
+    private bool ScreenSizeChanged()
+    {
+        if (lastScreenSize.x != Screen.width || lastScreenSize.y != Screen.height)
+        {
+            lastScreenSize = new Vector2(Screen.width, Screen.height);
+            return true;
+        }
+
+        return false;
     }
 }

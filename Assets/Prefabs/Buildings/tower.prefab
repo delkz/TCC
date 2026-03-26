@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -3807049738235472562}
   - component: {fileID: -4974803009390068529}
   - component: {fileID: -3655225227065811260}
+  - component: {fileID: 8869923888019340769}
   m_Layer: 7
   m_Name: tower
   m_TagString: Untagged
@@ -86,7 +87,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 6991795282918457499, guid: 2ccccda8ee978754aa48e7c59c6e2a83, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3cbd575d4968745d3a7f79a654fae04a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -134,7 +135,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.46, y: 0.59}
+    oldSize: {x: 2, y: 4}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -206,6 +207,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Buildable
   data: {fileID: 11400000, guid: aecabc7692361c8479bdff6d174e2744, type: 2}
+--- !u!114 &8869923888019340769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3950415348843120721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9beb47a435dfff249b4791f59f4e52ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridObject
+  size: {x: 1, y: 1}
 --- !u!1 &6654298052834654323
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,6 +10,13 @@ public class GridTheme : ScriptableObject
     public Sprite goalSprite;
     public Sprite blockedSprite;
 
+    [Header("Path Auto Tiles")]
+    public Sprite pathStraight;
+    public Sprite pathCorner;
+    public Sprite pathT;
+    public Sprite pathCross;
+    public Sprite pathEnd;
+
     [Header("Fallback Colors")]
     public Color emptyColor = Color.gray;
     public Color pathColor = Color.yellow;

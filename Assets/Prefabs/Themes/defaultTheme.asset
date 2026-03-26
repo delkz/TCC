@@ -12,11 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 911ba8f0f1d3ff94793c26383b759187, type: 3}
   m_Name: defaultTheme
   m_EditorClassIdentifier: Assembly-CSharp::GridTheme
-  emptySprite: {fileID: -4662870158839885734, guid: d25d7391109c85942bb77a378a873bf0, type: 3}
-  pathSprite: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
+  emptySprite: {fileID: 1317816526, guid: 027fd9e06196b4e62a8e40527bfbf3a9, type: 3}
+  pathSprite: {fileID: 1317816526, guid: 027fd9e06196b4e62a8e40527bfbf3a9, type: 3}
   spawnSprite: {fileID: 0}
   goalSprite: {fileID: 0}
-  blockedSprite: {fileID: -5500308063243910897, guid: f5de236c1ac65934e8e4928eeede31aa, type: 3}
+  blockedSprite: {fileID: 21300000, guid: 819d349f0d3f54eecac2ed309d6f97a1, type: 3}
+  pathStraight: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
+  pathCorner: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
+  pathT: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
+  pathCross: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
+  pathEnd: {fileID: -8737339077106667800, guid: d178a13380352784697cd90bebb04ba2, type: 3}
   emptyColor: {r: 0.24857599, g: 0.9245283, b: 0.3245542, a: 1}
   pathColor: {r: 0.8025643, g: 0.9339623, b: 0.53306335, a: 1}
   spawnColor: {r: 0, g: 1, b: 0, a: 1}
