@@ -66,6 +66,7 @@ public class ScoreManager : MonoBehaviour
 
         levelCompletedEmitted = true;
         Debug.Log($"Meta de score atingida! Score: {CurrentScore} / {TargetScore}");
+        GameAudioEvents.RaiseLevelCompleted();
         OnLevelCompleted?.Invoke();
     }
 }

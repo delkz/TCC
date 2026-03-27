@@ -136,6 +136,7 @@ public class BuildPreviewController : MonoBehaviour
         }
 
         gridManager.SetCellOccupant(currentGridPos, building);
+        GameAudioEvents.RaiseBuildPlaced(building.transform.position);
     }
 
     private void TryDestroy()
@@ -149,8 +150,10 @@ public class BuildPreviewController : MonoBehaviour
             return;
 
         goldManager.Add(buildable.GetRefundValue());
+        Vector3 removedPosition = occupant.transform.position;
         Destroy(occupant);
         gridManager.SetCellOccupant(currentGridPos, null);
+        GameAudioEvents.RaiseBuildRemoved(removedPosition);
     }
 
 

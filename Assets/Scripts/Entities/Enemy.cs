@@ -159,6 +159,7 @@ public class Enemy : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damage;
+        GameAudioEvents.RaiseEnemyHit(transform.position);
 
         if (currentHealth <= 0f)
         {

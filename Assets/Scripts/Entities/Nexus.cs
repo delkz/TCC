@@ -49,6 +49,7 @@ public class Nexus : MonoBehaviour
 
     private void Explode()
     {
+        GameAudioEvents.RaiseGameOver();
         OnNexusDestroyed?.Invoke();
 
         // Reinicia a cena atual
