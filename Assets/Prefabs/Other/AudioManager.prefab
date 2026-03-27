@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7837383604741791966
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 257112534791708060}
+  - component: {fileID: 353889508609186033}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &257112534791708060
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7837383604741791966}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &353889508609186033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7837383604741791966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0ff5815663e18429555d6dc40d3714, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  backgroundMusic:
+    _entity: {fileID: 11400000, guid: b0e6781919c7f3d44b0487cd4b8150d1, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 7837383604741791966}
+  enemyHitSfx:
+    _entity: {fileID: 11400000, guid: 276f6bdc7f9154b42b0b93276d7ce221, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 7837383604741791966}
+  levelCompletedSfx:
+    _entity: {fileID: 11400000, guid: 510eec53c95c9e2489e82c735c1be6a4, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 7837383604741791966}
+  gameOverSfx:
+    _entity: {fileID: 11400000, guid: ea173c5ad19a12f40a1ff5fac47f531e, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 7837383604741791966}
+  buildPlacedSfx:
+    _entity: {fileID: 11400000, guid: a810bd2c112073540baef88be39dfc6f, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 7837383604741791966}
+  buildRemovedSfx:
+    _entity: {fileID: 11400000, guid: a810bd2c112073540baef88be39dfc6f, type: 2}
+    ID: 0
+    <DebugObject>k__BackingField: {fileID: 7837383604741791966}
+  musicVolume: 1
+  sfxVolume: 1
+  volumeFadeTime: 0.15
+  playBgmOnStart: 1

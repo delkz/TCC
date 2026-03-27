@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
+    public static AudioManager Instance { get; private set; }
+
     [Header("Sound IDs")]
     [SerializeField] private SoundID backgroundMusic;
     [SerializeField] private SoundID enemyHitSfx;
@@ -18,6 +20,18 @@ public class AudioManager : MonoBehaviour
 
     [Header("Startup")]
     [SerializeField] private bool playBgmOnStart = true;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     private void OnEnable()
     {

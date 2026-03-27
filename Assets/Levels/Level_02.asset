@@ -15,9 +15,10 @@ MonoBehaviour:
   levelId: Level_02
   levelName: Parque Central
   description: Uma caminhada no parque
-  map: {fileID: 11400000, guid: b751eac1024f1464ab857d70705fa15a, type: 2}
+  map: {fileID: 11400000, guid: 4efea576b98685b4aaea808f8eb24670, type: 2}
   startingGold: 65
   enemyHealthMultiplier: 1.25
   enemySpeedMultiplier: 1.25
   nexusHealth: 10
+  scoreTarget: 50
   requiredCompletedLevels: []

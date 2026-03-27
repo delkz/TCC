@@ -27,3 +27,8 @@ MonoBehaviour:
   spawnColor: {r: 0, g: 1, b: 0, a: 1}
   goalColor: {r: 1, g: 0, b: 0, a: 1}
   blockedColor: {r: 0, g: 0.6256571, b: 1, a: 1}
+  customVisuals:
+  - type: 3
+    sprite: {fileID: 6215267202064938543, guid: c5a6a054a96fc4546851fdd38f73c8bb, type: 3}
+    color: {r: 0, g: 0, b: 0, a: 0}
+    sortingOrder: 2

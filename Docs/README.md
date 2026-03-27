@@ -7,6 +7,7 @@ Este diretorio concentra a documentacao tecnica do projeto.
 - [Sistema de Grid](grid-system.md)
 - [Como Vincular Sprites no Grid Theme](grid-theme-setup.md)
 - [Sistema de Build](build-system.md)
+- [Menu Principal - Guia de Implementacao](ui-mainmenu-setup.md)
 
 ## Regras de manutencao
 
