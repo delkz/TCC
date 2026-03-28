@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class DefenseTower : MonoBehaviour
+public class DefenseTower : MonoBehaviour, IRangeDisplayable
 {
     private Buildable buildable;
-    private BuildingData data;
+    private CircleCollider2D rangeCollider;
 
     [Header("Projectile")]
     [SerializeField] private Projectile projectilePrefab;
@@ -18,7 +18,24 @@ public class DefenseTower : MonoBehaviour
     private void Awake()
     {
         buildable = GetComponent<Buildable>();
-        data = buildable.Data;
+        rangeCollider = FindRangeCollider();
+        ApplyRangeFromBuildable();
+    }
+
+    private void OnEnable()
+    {
+        if (buildable != null)
+        {
+            buildable.OnLevelChanged += HandleLevelChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (buildable != null)
+        {
+            buildable.OnLevelChanged -= HandleLevelChanged;
+        }
     }
 
     private void Update()
@@ -34,7 +51,7 @@ public class DefenseTower : MonoBehaviour
             if (cooldownTimer <= 0f)
             {
                 Shoot(target);
-                cooldownTimer = data.attackCooldown;
+                cooldownTimer = buildable != null ? buildable.AttackCooldown : 1f;
             }
         }
     }
@@ -48,12 +65,17 @@ public class DefenseTower : MonoBehaviour
             Quaternion.identity
         );
 
+        if (buildable == null)
+        {
+            return;
+        }
+
         projectile.Initialize(
             target,
-            data.damage,
-            data.knockback,
-            data.slowAmount,
-            data.slowDuration
+            buildable.Damage,
+            buildable.Knockback,
+            buildable.SlowAmount,
+            buildable.SlowDuration
         );
     }
 
@@ -84,6 +106,35 @@ public class DefenseTower : MonoBehaviour
     }
 
     // ================= RANGE =================
+
+    private void HandleLevelChanged(int _)
+    {
+        ApplyRangeFromBuildable();
+    }
+
+    private CircleCollider2D FindRangeCollider()
+    {
+        CircleCollider2D[] colliders = GetComponentsInChildren<CircleCollider2D>();
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null && colliders[i].isTrigger)
+            {
+                return colliders[i];
+            }
+        }
+
+        return null;
+    }
+
+    private void ApplyRangeFromBuildable()
+    {
+        if (buildable == null || rangeCollider == null)
+        {
+            return;
+        }
+
+        rangeCollider.radius = Mathf.Max(0f, buildable.Range);
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -116,6 +167,23 @@ public class DefenseTower : MonoBehaviour
             Time.deltaTime * 10f
         );
 
+    }
+
+    // ================= INTERFACE: IRangeDisplayable =================
+
+    public float GetDisplayRange()
+    {
+        if (buildable == null)
+        {
+            return 0f;
+        }
+
+        return buildable.Range;
+    }
+
+    public Vector3 GetDisplayPosition()
+    {
+        return transform.position;
     }
 
 }

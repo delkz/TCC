@@ -25,6 +25,7 @@
         <ui:VisualElement name="BuildInfo" style="position: absolute; bottom: 20px; left: 20px; flex-direction: column; background-color: rgba(0, 0, 0, 0.6); padding: 10px;">
             <ui:Label name="ModeText" text="Mode: None"/>
             <ui:Label name="BuildingText" text="Building: None"/>
+            <ui:Label name="UpgradeInfo" text="" style="font-size: 14px; color: rgb(200, 200, 200); margin-top: 4px; display: none;"/>
         </ui:VisualElement>
         <ui:VisualElement name="PauseOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); align-items: center; justify-content: center; display: none;">
             <ui:VisualElement name="PausePanel" style="width: 440px; min-height: 260px; background-color: rgba(18, 18, 18, 0.95); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 18px; align-items: center; justify-content: center;">

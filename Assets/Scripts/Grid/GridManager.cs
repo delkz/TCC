@@ -49,6 +49,8 @@ public class GridManager : MonoBehaviour
     private Vector2Int goalCell;
     private Vector2 lastScreenSize;
 
+    public float CellSize => cellSize;
+
     private void Awake()
     {
         if (!TryGetSelectedMap(out GridMapAsset selectedMap))

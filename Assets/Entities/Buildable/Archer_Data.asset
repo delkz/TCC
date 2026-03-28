@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf305f5fa78197540a3f8475d420077b, type: 3}
+  m_Name: Archer_Data
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: Archer
+  prefab: {fileID: 3950415348843120721, guid: e155089e8129d2641a511b264929d8a3, type: 3}
+  icon: {fileID: 7257567913506708742, guid: 2a0fcb2f11a4d496d9d10417bc8e1ab1, type: 3}
+  buildCost: 15
+  refundPercent: 0.66
+  canBeDestroyed: 1
+  damage: 10
+  attackCooldown: 0.5
+  range: 4
+  slowAmount: 0.25
+  slowDuration: 0.75
+  knockback: 0
+  level2:
+    upgradeCost: 0
+    levelSprite: {fileID: 7257567913506708742, guid: 72c22f22ea5e4488390ba536cd5ab98d, type: 3}
+    damage: 15
+    attackCooldown: 0.5
+    range: 5
+    slowAmount: 0.25
+    slowDuration: 0.85
+    knockback: 0
+  hasLevel3: 1
+  level3:
+    upgradeCost: 0
+    levelSprite: {fileID: 7257567913506708742, guid: ea299bf4e13104b7baac745f77dd10c8, type: 3}
+    damage: 20
+    attackCooldown: 0.35
+    range: 6
+    slowAmount: 0.35
+    slowDuration: 1
+    knockback: 0

@@ -1,5 +1,6 @@
 public enum BuildMode
 {
     Build,
-    Destroy
+    Destroy,
+    Upgrade
 }

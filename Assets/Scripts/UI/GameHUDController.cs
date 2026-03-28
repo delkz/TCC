@@ -11,6 +11,7 @@ public class GameHUDController : MonoBehaviour
     // UI Elements
     private Label modeText;
     private Label buildingText;
+    private Label upgradeInfo;
     private Label moneyText;
     private Label nexusLifeText;
     private Label speedText;
@@ -44,6 +45,7 @@ public class GameHUDController : MonoBehaviour
 
         modeText = root.Q<Label>("ModeText");
         buildingText = root.Q<Label>("BuildingText");
+        upgradeInfo = root.Q<Label>("UpgradeInfo");
 
         moneyText = root.Q<Label>("GoldLabel");
         nexusLifeText = root.Q<Label>("HealthLabel");
@@ -245,6 +247,37 @@ public class GameHUDController : MonoBehaviour
     {
         if (buildingText != null)
             buildingText.text = $"Building: {buildingName} (Cost: {cost})";
+    }
+
+    public void UpdateUpgradeFeedback(Buildable buildable, int currentGold)
+    {
+        if (upgradeInfo == null)
+        {
+            return;
+        }
+
+        if (buildable == null || !buildable.CanUpgrade)
+        {
+            upgradeInfo.style.display = DisplayStyle.None;
+            return;
+        }
+
+        int upgradeCost = buildable.GetUpgradeCost();
+        int nextLevel = buildable.CurrentLevel + 1;
+        bool canAfford = currentGold >= upgradeCost;
+
+        string upgradeCostColor = canAfford ? "rgb(100, 200, 100)" : "rgb(200, 100, 100)";
+        upgradeInfo.style.display = DisplayStyle.Flex;
+        upgradeInfo.style.unityFontStyleAndWeight = FontStyle.Bold;
+        upgradeInfo.text = $"<color={upgradeCostColor}>Upgrade L{nextLevel}: {upgradeCost}g</color>";
+    }
+
+    public void ClearUpgradeFeedback()
+    {
+        if (upgradeInfo != null)
+        {
+            upgradeInfo.style.display = DisplayStyle.None;
+        }
     }
 
     private void UpdateWave(int wave)
