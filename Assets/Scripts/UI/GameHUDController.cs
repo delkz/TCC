@@ -21,6 +21,10 @@ public class GameHUDController : MonoBehaviour
     private VisualElement pauseOverlay;
     private VisualElement gameOverOverlay;
     private VisualElement levelCompletedOverlay;
+    private SliderInt pauseMusicVolumeSlider;
+    private SliderInt pauseSfxVolumeSlider;
+    private Button pauseBackToMenuButton;
+    private Button pauseRestartButton;
 
     [Header("Economy")]
     [SerializeField] private GoldManager goldManager;
@@ -51,6 +55,10 @@ public class GameHUDController : MonoBehaviour
         pauseOverlay = root.Q<VisualElement>("PauseOverlay");
         gameOverOverlay = root.Q<VisualElement>("GameOverOverlay");
         levelCompletedOverlay = root.Q<VisualElement>("LevelCompletedOverlay");
+        pauseMusicVolumeSlider = root.Q<SliderInt>("PauseMusicVolumeSlider");
+        pauseSfxVolumeSlider = root.Q<SliderInt>("PauseSfxVolumeSlider");
+        pauseBackToMenuButton = root.Q<Button>("PauseBackToMenuButton");
+        pauseRestartButton = root.Q<Button>("PauseRestartButton");
 
         scoreManager = FindObjectOfType<ScoreManager>();
     }
@@ -62,6 +70,7 @@ public class GameHUDController : MonoBehaviour
         BindGameManager();
         BindWave();
         BindScore();
+        BindPauseControls();
     }
 
     private void OnDestroy()
@@ -71,6 +80,7 @@ public class GameHUDController : MonoBehaviour
         UnbindGameManager();
         UnbindWave();
         UnbindScore();
+        UnbindPauseControls();
     }
 
     // =======================
@@ -153,12 +163,72 @@ public class GameHUDController : MonoBehaviour
         HandleSpeed(GameManager.Instance.GetGameSpeed());
     }
 
+    private void BindPauseControls()
+    {
+        if (pauseMusicVolumeSlider != null)
+        {
+            int musicValue = 100;
+            if (AudioManager.Instance != null)
+            {
+                musicValue = Mathf.RoundToInt(Mathf.Clamp01(AudioManager.Instance.GetMusicVolume()) * 100f);
+            }
+
+            pauseMusicVolumeSlider.SetValueWithoutNotify(musicValue);
+            pauseMusicVolumeSlider.RegisterValueChangedCallback(OnPauseMusicVolumeChanged);
+        }
+
+        if (pauseSfxVolumeSlider != null)
+        {
+            int sfxValue = 100;
+            if (AudioManager.Instance != null)
+            {
+                sfxValue = Mathf.RoundToInt(Mathf.Clamp01(AudioManager.Instance.GetSfxVolume()) * 100f);
+            }
+
+            pauseSfxVolumeSlider.SetValueWithoutNotify(sfxValue);
+            pauseSfxVolumeSlider.RegisterValueChangedCallback(OnPauseSfxVolumeChanged);
+        }
+
+        if (pauseBackToMenuButton != null)
+        {
+            pauseBackToMenuButton.clicked += OnPauseBackToMenuClicked;
+        }
+
+        if (pauseRestartButton != null)
+        {
+            pauseRestartButton.clicked += OnPauseRestartClicked;
+        }
+    }
+
     private void UnbindGameManager()
     {
         if (GameManager.Instance == null) return;
 
         GameManager.Instance.OnPauseChanged -= HandlePause;
         GameManager.Instance.OnSpeedChanged -= HandleSpeed;
+    }
+
+    private void UnbindPauseControls()
+    {
+        if (pauseMusicVolumeSlider != null)
+        {
+            pauseMusicVolumeSlider.UnregisterValueChangedCallback(OnPauseMusicVolumeChanged);
+        }
+
+        if (pauseSfxVolumeSlider != null)
+        {
+            pauseSfxVolumeSlider.UnregisterValueChangedCallback(OnPauseSfxVolumeChanged);
+        }
+
+        if (pauseBackToMenuButton != null)
+        {
+            pauseBackToMenuButton.clicked -= OnPauseBackToMenuClicked;
+        }
+
+        if (pauseRestartButton != null)
+        {
+            pauseRestartButton.clicked -= OnPauseRestartClicked;
+        }
     }
 
     // =======================
@@ -269,5 +339,55 @@ public class GameHUDController : MonoBehaviour
     {
         if (speedText != null)
             speedText.text = $"{speed}x";
+    }
+
+    private void OnPauseMusicVolumeChanged(ChangeEvent<int> evt)
+    {
+        if (AudioManager.Instance == null)
+        {
+            return;
+        }
+
+        float normalizedVolume = Mathf.Clamp01(evt.newValue / 100f);
+        AudioManager.Instance.SetMusicVolume(normalizedVolume);
+    }
+
+    private void OnPauseSfxVolumeChanged(ChangeEvent<int> evt)
+    {
+        if (AudioManager.Instance == null)
+        {
+            return;
+        }
+
+        float normalizedVolume = Mathf.Clamp01(evt.newValue / 100f);
+        AudioManager.Instance.SetSfxVolume(normalizedVolume);
+    }
+
+    private void OnPauseBackToMenuClicked()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ReturnToMenu();
+            return;
+        }
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Menu");
+    }
+
+    private void OnPauseRestartClicked()
+    {
+        string currentScene = SceneManager.GetActiveScene().name;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetTime();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
+
+        SceneManager.LoadScene(currentScene);
     }
 }

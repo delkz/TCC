@@ -27,7 +27,17 @@
             <ui:Label name="BuildingText" text="Building: None"/>
         </ui:VisualElement>
         <ui:VisualElement name="PauseOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); align-items: center; justify-content: center; display: none;">
-            <ui:Label text="PAUSED"/>
+            <ui:VisualElement name="PausePanel" style="width: 440px; min-height: 260px; background-color: rgba(18, 18, 18, 0.95); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 18px; align-items: center; justify-content: center;">
+                <ui:Label text="PAUSED" style="font-size: 30px; color: rgb(240, 240, 240); unity-font-style: bold; margin-bottom: 10px;"/>
+                <ui:VisualElement style="width: 100%; flex-direction: column; margin-bottom: 12px;">
+                    <ui:Label text="Música" style="font-size: 16px; color: rgb(220, 220, 220); margin-bottom: 4px;"/>
+                    <ui:SliderInt name="PauseMusicVolumeSlider" low-value="0" high-value="100" value="100" style="width: 100%; margin-bottom: 8px;"/>
+                    <ui:Label text="SFX" style="font-size: 16px; color: rgb(220, 220, 220); margin-bottom: 4px;"/>
+                    <ui:SliderInt name="PauseSfxVolumeSlider" low-value="0" high-value="100" value="100" style="width: 100%;"/>
+                </ui:VisualElement>
+                <ui:Button name="PauseRestartButton" text="Recomeçar" style="width: 100%; margin-bottom: 8px; height: 36px;"/>
+                <ui:Button name="PauseBackToMenuButton" text="Voltar ao Início" style="width: 100%; height: 36px;"/>
+            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="GameOverOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; display: none;">
             <ui:Label text="GAME OVER"/>

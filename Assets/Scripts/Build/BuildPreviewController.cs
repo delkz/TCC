@@ -38,6 +38,21 @@ public class BuildPreviewController : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.Paused)
+        {
+            if (previewInstance != null && previewInstance.activeSelf)
+            {
+                previewInstance.SetActive(false);
+            }
+
+            return;
+        }
+
+        if (previewInstance != null && !previewInstance.activeSelf)
+        {
+            previewInstance.SetActive(true);
+        }
+
         HandleModeSwitch();
         UpdatePreview();
         HandleInput();

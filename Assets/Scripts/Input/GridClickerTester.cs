@@ -7,6 +7,11 @@ public class GridClickerTester : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.Paused)
+        {
+            return;
+        }
+
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             Vector3 mousePosition = Mouse.current.position.ReadValue();
@@ -17,7 +22,7 @@ public class GridClickerTester : MonoBehaviour
 
             if (gridManager.IsValidCell(gridPosition.x, gridPosition.y))
             {
-                Debug.Log($"Célula clicada: X={gridPosition.x}, Y={gridPosition.y}");
+                Debug.Log($"Cï¿½lula clicada: X={gridPosition.x}, Y={gridPosition.y}");
             }
             else
             {

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf305f5fa78197540a3f8475d420077b, type: 3}
   m_Name: Tower_Fast_Data
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Archer Veteran
+  buildingName: Fast Archer
   prefab: {fileID: 3950415348843120721, guid: e155089e8129d2641a511b264929d8a3, type: 3}
   icon: {fileID: 7257567913506708742, guid: ea299bf4e13104b7baac745f77dd10c8, type: 3}
   buildCost: 15

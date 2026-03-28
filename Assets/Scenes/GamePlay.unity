@@ -213,9 +213,8 @@ MonoBehaviour:
   hudController: {fileID: 356801505}
   previewPrefab: {fileID: 3950415348843120721, guid: f3646e07b77f992488aa9e9cd87d390d, type: 3}
   buildings:
-  - {fileID: 11400000, guid: aecabc7692361c8479bdff6d174e2744, type: 2}
   - {fileID: 11400000, guid: 7aba8192581bd1644be0e4e381e44d9c, type: 2}
-  - {fileID: 11400000, guid: e49ab7684e48f5c46a6b45fac394ce02, type: 2}
+  - {fileID: 11400000, guid: aecabc7692361c8479bdff6d174e2744, type: 2}
   selectedIndex: 0
 --- !u!1 &157352739
 GameObject:

@@ -75,6 +75,16 @@ public class AudioManager : MonoBehaviour
         BroAudio.SetVolume(BroAudioType.SFX, sfxVolume, volumeFadeTime);
     }
 
+    public float GetMusicVolume()
+    {
+        return musicVolume;
+    }
+
+    public float GetSfxVolume()
+    {
+        return sfxVolume;
+    }
+
     private void ApplyVolumes()
     {
         BroAudio.SetVolume(BroAudioType.Music, musicVolume, volumeFadeTime);

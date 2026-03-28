@@ -14,6 +14,12 @@ public class GridMapAssetEditor : Editor
 
     private const float CELL_WIDTH = 60f;
     private const float CELL_HEIGHT = 25f;
+    private const float BORDER_WIDTH = 1f;
+    private const int ASPECT_RATIO_WIDTH = 16;
+    private const int ASPECT_RATIO_HEIGHT = 9;
+    private const float MARGIN = 1f; // 1 célula de margem
+
+    private Vector2 gridScrollPosition = Vector2.zero;
 
     private void OnEnable()
     {
@@ -112,48 +118,92 @@ public class GridMapAssetEditor : Editor
     // =========================
     private void DrawGridEditor()
     {
-        Event e = Event.current;
+        // Calcular tamanho necessário para o grid
+        float gridWidth = map.width * CELL_WIDTH;
+        float gridHeight = map.height * CELL_HEIGHT;
 
-        if (e.type == EventType.MouseDown && e.button == 0)
+        // Obter rect para o scroll view
+        Rect scrollViewRect = EditorGUILayout.GetControlRect(GUILayout.Height(400));
+
+        // Usar GUI.BeginScrollView com tamanho fixo
+        gridScrollPosition = GUI.BeginScrollView(
+            scrollViewRect,
+            gridScrollPosition,
+            new Rect(0, 0, gridWidth, gridHeight),
+            true,
+            true
+        );
+
+        for (int y = 0; y < map.height; y++)
         {
-            isPainting = true;
-            e.Use();
-        }
-
-        if (e.type == EventType.MouseUp)
-        {
-            isPainting = false;
-        }
-
-        for (int y = map.height - 1; y >= 0; y--)
-        {
-            GUILayout.BeginHorizontal();
-
             for (int x = 0; x < map.width; x++)
             {
                 int index = x + y * map.width;
                 CellType current = map.cells[index];
 
-                Rect cellRect = GUILayoutUtility.GetRect(CELL_WIDTH, CELL_HEIGHT);
+                Rect cellRect = new Rect(x * CELL_WIDTH, y * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
 
                 GUI.color = GetColor(current);
-                GUI.Box(cellRect, current.ToString());
-                GUI.color = Color.white;
-
-                if (isPainting && cellRect.Contains(e.mousePosition))
+                
+                // GUI.RepeatButton retorna true enquanto o mouse está pressionado sobre o botão
+                if (GUI.RepeatButton(cellRect, current.ToString()))
                 {
                     if (current != activePaintType)
                     {
                         Undo.RecordObject(map, "Paint Cell");
                         map.SetCell(x, y, activePaintType);
                         EditorUtility.SetDirty(map);
-                        Repaint();
                     }
                 }
-            }
 
-            GUILayout.EndHorizontal();
+                // Desenhar borda para célula central
+                if (IsCenterCell(x, y))
+                {
+                    DrawCenterCellBorder(cellRect);
+                }
+
+                GUI.color = Color.white;
+            }
         }
+
+        // Desenhar borda da área 16/9
+        Draw169AspectRatioBorder();
+
+        GUI.EndScrollView();
+    }
+
+    private bool IsCenterCell(int x, int y)
+    {
+        int centerX = map.width / 2;
+        int centerY = map.height / 2;
+        return x == centerX && y == centerY;
+    }
+
+    private void DrawCenterCellBorder(Rect cellRect)
+    {
+        Color borderColor = Color.yellow;
+        Handles.color = borderColor;
+        Handles.DrawSolidRectangleWithOutline(cellRect, Color.clear, borderColor);
+    }
+
+    private void Draw169AspectRatioBorder()
+    {
+        int centerX = map.width / 2;
+        int centerY = map.height / 2;
+
+        // Calcular posição inicial (canto superior esquerdo da área 16/9)
+        float areaWidth = ASPECT_RATIO_WIDTH * CELL_WIDTH + MARGIN * 2;
+        float areaHeight = ASPECT_RATIO_HEIGHT * CELL_HEIGHT + MARGIN * 2;
+
+        float startX = centerX * CELL_WIDTH - areaWidth / 2;
+        float startY = centerY * CELL_HEIGHT - areaHeight / 2;
+
+        Rect areaBorder = new Rect(startX, startY, areaWidth, areaHeight);
+
+        // Desenhar borda da área 16/9
+        Color aspectRatioColor = new Color(0.2f, 0.8f, 1f, 1f); // Azul claro
+        Handles.color = aspectRatioColor;
+        Handles.DrawSolidRectangleWithOutline(areaBorder, Color.clear, aspectRatioColor);
     }
 
     // =========================
